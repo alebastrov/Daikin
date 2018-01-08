@@ -29,7 +29,7 @@ public class WiredDaikin extends DaikinBase {
     private static final String SET_STATE = "";
 
     // the temp values come back with European formatting - i.e. 23,5
-    private static final NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("de"));
+    private NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("de"));
 
     public WiredDaikin(String host) {
         super(host);

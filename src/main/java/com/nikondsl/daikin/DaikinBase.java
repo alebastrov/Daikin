@@ -5,107 +5,42 @@ import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.enums.Timer;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
+import lombok.Getter;
+import lombok.Setter;
 
-public abstract class DaikinBase implements IDaikin {
+public abstract class DaikinBase {
 
+    @Getter
     protected final String host;
+    @Getter
+    @Setter
     protected double targetTemperature = 0;
-
-    // control info
+    @Getter
+    @Setter
     protected boolean on = false;
+    @Getter
+    @Setter
     protected int targetHumidity = 0;
+    @Getter
+    @Setter
     protected Mode mode = Mode.None;
+    @Getter
+    @Setter
     protected Fan fan = Fan.None;
+    @Getter
+    @Setter
     protected FanDirection fanDirection = FanDirection.None;
+    @Getter
     protected Timer timer = Timer.None;
-
-    // sensor info
+    @Getter
     protected double insideTemperature = 0;
+    @Getter
     protected double insideHumidity = 0;
+    @Getter
     protected double outsideTemperature = 0;
 
     public DaikinBase(String host) {
         this.host = host;
-    }
-
-    @Override
-    public String getHost() {
-        return host;
-    }
-
-    @Override
-    public boolean isOn() {
-        return on;
-    }
-
-    @Override
-    public void setOn(boolean on) {
-        this.on = on;
-    }
-
-    @Override
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    @Override
-    public Mode getMode() {
-        return mode;
-    }
-
-    @Override
-    public void setTargetTemperature(double temperature) {
-        this.targetTemperature = temperature;
-    }
-
-    @Override
-    public double getTargetTemperature() {
-        return targetTemperature;
-    }
-
-    @Override
-    public void setTargetHumidity(int humidity) {
-        this.targetHumidity = humidity;
-    }
-
-    @Override
-    public int getTargetHumidity() {
-        return targetHumidity;
-    }
-
-    @Override
-    public void setFan(Fan fan) {
-        this.fan = fan;
-    }
-
-    @Override
-    public Fan getFan() {
-        return fan;
-    }
-
-    @Override
-    public void setFanDirection(FanDirection fanDirection) {
-        this.fanDirection = fanDirection;
-    }
-
-    @Override
-    public FanDirection getFanDirection() {
-        return fanDirection;
-    }
-
-    @Override
-    public Timer getTimer() {
-        return timer;
-    }
-
-    @Override
-    public double getInsideTemperature() {
-        return insideTemperature;
-    }
-
-    @Override
-    public double getOutsideTemperature() {
-        return outsideTemperature;
     }
 
     @Override

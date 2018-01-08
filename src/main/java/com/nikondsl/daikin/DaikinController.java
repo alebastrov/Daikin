@@ -74,7 +74,7 @@ public class DaikinController {
                     lookUpService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            IDaikin daikin = getDaikin(ip);
+                            DaikinBase daikin = getDaikin(ip);
                             System.err.println("Scanning " + daikin.getHost());
                             List<String> rows = RestConnector.submitGet(daikin, "/common/basic_info", false);
                             if (rows == null) return;
@@ -93,7 +93,7 @@ public class DaikinController {
 
         CommandParser cParser = new CommandParser();
         new JCommander(cParser, args);
-        IDaikin daikin = DaikinFactory.createWirelessDaikin(String.format("%1s://%2s", cParser.getProtocol(), cParser.getHost()));
+        DaikinBase daikin = DaikinFactory.createWirelessDaikin(String.format("%1s://%2s", cParser.getProtocol(), cParser.getHost()));
 
         if (cParser.getCheckEvery() != null && cParser.getCheckEvery().length() > 0) {
             String secondsToSleep = cParser.getCheckEvery().replaceAll("\\D", "");
@@ -139,81 +139,8 @@ public class DaikinController {
         System.err.println("State after: " + daikin);
     }
 
-    private static IDaikin getDaikin(final int ip) {
-        return new IDaikin() {
-            @Override
-            public String getHost() {
-                return "http://192.168.1." + ip;
-            }
-
-            @Override
-            public void setOn(boolean on) {
-            }
-
-            @Override
-            public boolean isOn() {
-                return false;
-            }
-
-            @Override
-            public void setMode(Mode mode) {
-            }
-
-            @Override
-            public Mode getMode() {
-                return Mode.Auto;
-            }
-
-            @Override
-            public void setTargetTemperature(double temperature) {
-            }
-
-            @Override
-            public double getTargetTemperature() {
-                return 20;
-            }
-
-            @Override
-            public void setTargetHumidity(int humidity) {
-            }
-
-            @Override
-            public int getTargetHumidity() {
-                return 0;
-            }
-
-            @Override
-            public void setFan(Fan fanRate) {
-            }
-
-            @Override
-            public Fan getFan() {
-                return Fan.Auto;
-            }
-
-            @Override
-            public void setFanDirection(FanDirection fanDirection) {
-            }
-
-            @Override
-            public FanDirection getFanDirection() {
-                return FanDirection.Off;
-            }
-
-            @Override
-            public Timer getTimer() {
-                return null;
-            }
-
-            @Override
-            public double getInsideTemperature() {
-                return 0;
-            }
-
-            @Override
-            public double getOutsideTemperature() {
-                return 0;
-            }
+    private static DaikinBase getDaikin(final int ip) {
+        return new DaikinBase("http://192.168.1." + ip) {
 
             @Override
             public void updateDaikinState(boolean verboseOutput) {
@@ -235,7 +162,7 @@ public class DaikinController {
         }
     }
 
-    private static void tryWriteToFile(String writeToFile, IDaikin daikin) throws IOException {
+    private static void tryWriteToFile(String writeToFile, DaikinBase daikin) throws IOException {
         Path filePath = Paths.get(writeToFile);
         if (!Files.exists(filePath)) {
             filePath = Files.createFile(filePath);

@@ -1,9 +1,9 @@
 package com.nikondsl.daikin.util;
 
+import com.nikondsl.daikin.DaikinBase;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.ResponseOptions;
 import io.restassured.specification.RequestSpecification;
-import com.nikondsl.daikin.IDaikin;
 
 
 import java.util.Collections;
@@ -14,7 +14,7 @@ import static io.restassured.RestAssured.given;
 
 public class RestConnector {
 
-    public static List<String> submitGet(IDaikin daikin, String path, boolean verboseOutput) {
+    public static List<String> submitGet(DaikinBase daikin, String path, boolean verboseOutput) {
         try {
             RequestSpecification spec = new RequestSpecBuilder().setBaseUri(daikin.getHost()).setPort(80).build();
             if (verboseOutput) System.err.println("request=" + daikin.getHost() + path);
