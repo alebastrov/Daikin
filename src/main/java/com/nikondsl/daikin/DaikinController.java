@@ -1,30 +1,26 @@
 package com.nikondsl.daikin;
 
 import com.beust.jcommander.JCommander;
-import io.restassured.config.HttpClientConfig;
-import io.restassured.config.RestAssuredConfig;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
-import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
+import io.restassured.config.HttpClientConfig;
+import io.restassured.config.RestAssuredConfig;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -70,18 +66,15 @@ public class DaikinController {
                 ExecutorService lookUpService = Executors.newFixedThreadPool(5);
                 for (int i = 1; i < 255; i++) {
                     final int ip = i;
-                    lookUpService.submit(new Runnable() {
-                        @Override
-                        public void run() {
-                            DaikinBase daikin = getDaikin(ip, 80);
-                            System.err.println("Scanning " + daikin.getHost());
-                            List<String> rows = RestConnector.submitGet(daikin, "/common/basic_info", false);
-                            if (rows == null) return;
-                            String responseFromAirCon = rows.get(0);
-                            if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) return;
-                            String name = URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
-                            System.err.println("Found Daikin [" + name + "] at " + daikin.getHost());
-                        }
+                    lookUpService.submit(() -> {
+                        com.nikondsl.daikin.DaikinBase daikin = getDaikin(ip, 80);
+                        System.err.println("Scanning " + daikin.getHost());
+                        java.util.List<String> rows = com.nikondsl.daikin.util.RestConnector.submitGet(daikin, "/common/basic_info", false);
+                        if (rows == null) return;
+                        String responseFromAirCon = rows.get(0);
+                        if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) return;
+                        String name = java.net.URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
+                        System.err.println("Found Daikin [" + name + "] at " + daikin.getHost());
                     });
                 }
                 lookUpService.shutdown();
