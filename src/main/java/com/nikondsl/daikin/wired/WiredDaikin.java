@@ -65,7 +65,7 @@ public class WiredDaikin extends DaikinBase {
         sb.append("&wSETd1=Set");
         parameters.put("wSETd1", "Set");
 
-        RestConnector.submitPost(this.getHost(), SET_STATE, sb.toString(), parameters, isVerboseOutput);
+        RestConnector.submitPost(this, SET_STATE, sb.toString(), parameters, isVerboseOutput);
     }
 
     @Override

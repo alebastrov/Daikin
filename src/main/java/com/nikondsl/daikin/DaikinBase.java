@@ -38,6 +38,8 @@ public abstract class DaikinBase {
     protected double insideHumidity = 0;
     @Getter
     protected double outsideTemperature = 0;
+    @Getter
+    protected int port = 80;
 
     public DaikinBase(String host) {
         this.host = host;

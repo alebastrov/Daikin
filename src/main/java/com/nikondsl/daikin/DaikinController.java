@@ -100,7 +100,7 @@ public class DaikinController {
             if (secondsToSleep.length() > 0) {
                 while (true) {
                     int seconds = Integer.parseInt(secondsToSleep);
-                    if (seconds > 360000 || seconds == 0) seconds = 60;
+                    if (seconds > 360_000 || seconds == 0) seconds = 60;
                     try {
                         daikin.readDaikinState(cParser.isVerboseOutput(), true);
 

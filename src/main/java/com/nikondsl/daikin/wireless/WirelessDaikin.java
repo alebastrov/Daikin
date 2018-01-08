@@ -51,7 +51,7 @@ public class WirelessDaikin extends DaikinBase {
         sb.append(getTargetHumidity());
         parameters.put("shum", "" + getTargetHumidity());
 
-        RestConnector.submitPost(this.getHost(), SET_CONTROL_INFO, sb.toString(), parameters, isVerboseOutput);
+        RestConnector.submitPost(this, SET_CONTROL_INFO, sb.toString(), parameters, isVerboseOutput);
     }
 
     @Override
