@@ -1,14 +1,14 @@
-package net.jonathangiles.daikin;
+package com.nikondsl.daikin;
 
 import com.beust.jcommander.JCommander;
 import io.restassured.config.HttpClientConfig;
 import io.restassured.config.RestAssuredConfig;
-import net.jonathangiles.daikin.enums.Fan;
-import net.jonathangiles.daikin.enums.FanDirection;
-import net.jonathangiles.daikin.enums.Mode;
-import net.jonathangiles.daikin.enums.Timer;
-import net.jonathangiles.daikin.util.RestConnector;
-import net.jonathangiles.daikin.wireless.WirelessDaikin;
+import com.nikondsl.daikin.enums.Fan;
+import com.nikondsl.daikin.enums.FanDirection;
+import com.nikondsl.daikin.enums.Mode;
+import com.nikondsl.daikin.enums.Timer;
+import com.nikondsl.daikin.util.RestConnector;
+import com.nikondsl.daikin.wireless.WirelessDaikin;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.params.HttpConnectionParams;

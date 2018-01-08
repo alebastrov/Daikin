@@ -1,7 +1,7 @@
-package net.jonathangiles.daikin;
+package com.nikondsl.daikin;
 
-import net.jonathangiles.daikin.wired.WiredDaikin;
-import net.jonathangiles.daikin.wireless.WirelessDaikin;
+import com.nikondsl.daikin.wired.WiredDaikin;
+import com.nikondsl.daikin.wireless.WirelessDaikin;
 
 public class DaikinFactory {
 

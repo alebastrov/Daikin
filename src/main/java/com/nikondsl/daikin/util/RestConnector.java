@@ -1,9 +1,9 @@
-package net.jonathangiles.daikin.util;
+package com.nikondsl.daikin.util;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.response.ResponseOptions;
 import io.restassured.specification.RequestSpecification;
-import net.jonathangiles.daikin.IDaikin;
+import com.nikondsl.daikin.IDaikin;
 
 
 import java.util.Collections;

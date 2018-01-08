@@ -1,4 +1,4 @@
-package net.jonathangiles.daikin.enums;
+package com.nikondsl.daikin.enums;
 
 public enum Mode {
 

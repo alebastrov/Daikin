@@ -1,10 +1,10 @@
-package net.jonathangiles.daikin;
+package com.nikondsl.daikin;
 
-import net.jonathangiles.daikin.enums.Fan;
-import net.jonathangiles.daikin.enums.FanDirection;
-import net.jonathangiles.daikin.enums.Mode;
-import net.jonathangiles.daikin.enums.Timer;
-import net.jonathangiles.daikin.wireless.WirelessDaikin;
+import com.nikondsl.daikin.enums.Fan;
+import com.nikondsl.daikin.enums.FanDirection;
+import com.nikondsl.daikin.enums.Mode;
+import com.nikondsl.daikin.enums.Timer;
+import com.nikondsl.daikin.wireless.WirelessDaikin;
 
 public abstract class DaikinBase implements IDaikin {
 

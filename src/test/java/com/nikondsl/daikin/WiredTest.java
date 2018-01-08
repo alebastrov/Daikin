@@ -1,4 +1,4 @@
-package net.jonathangiles.daikin;
+package com.nikondsl.daikin;
 
 public class WiredTest {
 

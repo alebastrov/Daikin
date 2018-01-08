@@ -1,8 +1,8 @@
-package net.jonathangiles.daikin;
+package com.nikondsl.daikin;
 
-import net.jonathangiles.daikin.enums.Fan;
-import net.jonathangiles.daikin.enums.FanDirection;
-import net.jonathangiles.daikin.enums.Mode;
+import com.nikondsl.daikin.enums.Fan;
+import com.nikondsl.daikin.enums.FanDirection;
+import com.nikondsl.daikin.enums.Mode;
 
 public class WirelessTest {
 

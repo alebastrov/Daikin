@@ -1,11 +1,11 @@
-package net.jonathangiles.daikin.wired;
+package com.nikondsl.daikin.wired;
 
-import net.jonathangiles.daikin.DaikinBase;
-import net.jonathangiles.daikin.enums.Fan;
-import net.jonathangiles.daikin.enums.FanDirection;
-import net.jonathangiles.daikin.enums.Mode;
-import net.jonathangiles.daikin.enums.Timer;
-import net.jonathangiles.daikin.util.RestConnector;
+import com.nikondsl.daikin.DaikinBase;
+import com.nikondsl.daikin.enums.Fan;
+import com.nikondsl.daikin.enums.FanDirection;
+import com.nikondsl.daikin.enums.Mode;
+import com.nikondsl.daikin.enums.Timer;
+import com.nikondsl.daikin.util.RestConnector;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;

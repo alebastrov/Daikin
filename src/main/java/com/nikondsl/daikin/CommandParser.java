@@ -1,4 +1,4 @@
-package net.jonathangiles.daikin;
+package com.nikondsl.daikin;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
