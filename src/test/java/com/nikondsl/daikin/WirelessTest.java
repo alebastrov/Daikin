@@ -8,7 +8,7 @@ public class WirelessTest {
 
     public static void main(String[] args) {
         final String host = "http://192.168.1.162";
-        DaikinBase daikin = DaikinFactory.createWirelessDaikin(host);
+        DaikinBase daikin = DaikinFactory.createWirelessDaikin(host, 80);
         daikin.setTargetTemperature(22);
         daikin.setMode(Mode.Heat);
         daikin.setOn(true);

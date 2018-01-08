@@ -5,11 +5,11 @@ import com.nikondsl.daikin.wireless.WirelessDaikin;
 
 public class DaikinFactory {
 
-    public static DaikinBase createWiredDaikin(String host) {
-        return new WiredDaikin(host);
+    public static DaikinBase createWiredDaikin(String host, int port) {
+        return new WiredDaikin(host, port);
     }
 
-    public static DaikinBase createWirelessDaikin(String host) {
-        return new WirelessDaikin(host);
+    public static DaikinBase createWirelessDaikin(String host, int port) {
+        return new WirelessDaikin(host, port);
     }
 }

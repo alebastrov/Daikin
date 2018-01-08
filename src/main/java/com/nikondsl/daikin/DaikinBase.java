@@ -41,8 +41,9 @@ public abstract class DaikinBase {
     @Getter
     protected int port = 80;
 
-    public DaikinBase(String host) {
+    public DaikinBase(String host, int port) {
         this.host = host;
+        this.port = port;
     }
 
     @Override

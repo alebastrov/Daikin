@@ -31,8 +31,8 @@ public class WiredDaikin extends DaikinBase {
     // the temp values come back with European formatting - i.e. 23,5
     private NumberFormat numberFormat = NumberFormat.getNumberInstance(new Locale("de"));
 
-    public WiredDaikin(String host) {
-        super(host);
+    public WiredDaikin(String host, int port) {
+        super(host, port);
     }
 
     @Override

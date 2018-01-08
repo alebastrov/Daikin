@@ -6,7 +6,6 @@ import io.restassured.config.RestAssuredConfig;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
-import com.nikondsl.daikin.enums.Timer;
 import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
 import org.apache.http.client.HttpClient;
@@ -47,7 +46,7 @@ public class DaikinController {
             System.err.println("-fan (1), possible values: (a|1|2|3|4|5)");
             System.err.println("-direction (), possible values: (|h|v|hv|vh)");
             System.err.println("-verbose (), possible values: (|any)");
-
+            System.err.println("-port (80)");
             System.err.println("-file (), possible values: (any path)");
             System.err.println("-check.every (), possible values: (1-3600 seconds)");
             return;
@@ -74,7 +73,7 @@ public class DaikinController {
                     lookUpService.submit(new Runnable() {
                         @Override
                         public void run() {
-                            DaikinBase daikin = getDaikin(ip);
+                            DaikinBase daikin = getDaikin(ip, 80);
                             System.err.println("Scanning " + daikin.getHost());
                             List<String> rows = RestConnector.submitGet(daikin, "/common/basic_info", false);
                             if (rows == null) return;
@@ -93,7 +92,7 @@ public class DaikinController {
 
         CommandParser cParser = new CommandParser();
         new JCommander(cParser, args);
-        DaikinBase daikin = DaikinFactory.createWirelessDaikin(String.format("%1s://%2s", cParser.getProtocol(), cParser.getHost()));
+        DaikinBase daikin = DaikinFactory.createWirelessDaikin(String.format("%1s://%2s", cParser.getProtocol(), cParser.getHost()), Integer.parseInt(cParser.getPort()));
 
         if (cParser.getCheckEvery() != null && cParser.getCheckEvery().length() > 0) {
             String secondsToSleep = cParser.getCheckEvery().replaceAll("\\D", "");
@@ -139,8 +138,8 @@ public class DaikinController {
         System.err.println("State after: " + daikin);
     }
 
-    private static DaikinBase getDaikin(final int ip) {
-        return new DaikinBase("http://192.168.1." + ip) {
+    private static DaikinBase getDaikin(final int ip, int port) {
+        return new DaikinBase("http://192.168.1." + ip, port) {
 
             @Override
             public void updateDaikinState(boolean verboseOutput) {

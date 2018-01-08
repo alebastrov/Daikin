@@ -4,7 +4,7 @@ public class WiredTest {
 
     public static void main(String[] args) {
         final String host = "http://daikin";
-        DaikinBase daikin = DaikinFactory.createWiredDaikin(host);
+        DaikinBase daikin = DaikinFactory.createWiredDaikin(host, 80);
 //        daikin.setTargetTemperature(20);
 //        daikin.setMode(Mode.Auto);
 //        daikin.setOn(true);
