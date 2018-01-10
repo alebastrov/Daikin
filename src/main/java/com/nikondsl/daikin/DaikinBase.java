@@ -25,8 +25,10 @@ public abstract class DaikinBase {
     @Setter
     protected Mode mode = Mode.None;
     @Getter
+    @Setter
     protected Fan fan = Fan.None;
     @Getter
+    @Setter
     protected FanDirection fanDirection = FanDirection.None;
     @Getter
     protected Timer timer = Timer.None;
