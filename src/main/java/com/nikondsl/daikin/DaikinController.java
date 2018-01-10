@@ -37,7 +37,7 @@ public class DaikinController {
             System.err.println("-port (80)");
             System.err.println("-power (on), possible values: (on|off)");
             System.err.println("-mode (auto), possible values: (auto|dry|cool|heat|fan)");
-            System.err.println("-temp (22)");
+            System.err.println("-temp (22), possible values: any integer > 10 and < 50");
             System.err.println("-humid (3)");
             System.err.println("-fan (1), possible values: (a|1|2|3|4|5)");
             System.err.println("-direction (), possible values: (|h|v|hv|vh)");
@@ -51,15 +51,12 @@ public class DaikinController {
         for (String arg : args) {
             if ("-scan".equals(arg)) {
                 HttpClientConfig clientConfig = RestAssuredConfig.config().getHttpClientConfig();
-                clientConfig = clientConfig.httpClientFactory(new HttpClientConfig.HttpClientFactory() {
-                    @Override
-                    public HttpClient createHttpClient() {
-                        HttpClient rv = new SystemDefaultHttpClient();
-                        HttpParams httpParams = rv.getParams();
-                        HttpConnectionParams.setConnectionTimeout(httpParams, 1 * 1000); //Wait 5s for a connection
-                        HttpConnectionParams.setSoTimeout(httpParams, 2 * 1000); // Default session is 60s
-                        return rv;
-                    }
+                clientConfig = clientConfig.httpClientFactory(() -> {
+                    HttpClient rv = new SystemDefaultHttpClient();
+                    HttpParams httpParams = rv.getParams();
+                    HttpConnectionParams.setConnectionTimeout(httpParams, 1 * 1000); //Wait 5s for a connection
+                    HttpConnectionParams.setSoTimeout(httpParams, 2 * 1000); // Default session is 60s
+                    return rv;
                 });
                 clientConfig = clientConfig.reuseHttpClientInstance();
                 RestAssuredConfig.config().httpClient(clientConfig);
@@ -120,8 +117,8 @@ public class DaikinController {
         if (targetFan != Fan.None) daikin.setFan(targetFan);
         FanDirection targetFanDirection = WirelessDaikin.parseFanDirection(cParser.getFanDirection());
         if (targetFanDirection != FanDirection.None) daikin.setFanDirection(targetFanDirection);
-        double targetTemperature = WirelessDaikin.parseDouble(cParser.getTargetTemperature());
-        if (targetTemperature > 0) daikin.setTargetTemperature(targetTemperature);
+        int targetTemperature = WirelessDaikin.parseInt(cParser.getTargetTemperature());
+        if (targetTemperature > 10 && targetTemperature < 50) daikin.setTargetTemperature(targetTemperature);
         int targetHumidity = WirelessDaikin.parseInt(cParser.getTargetHumudity());
         if (targetHumidity > 0) daikin.setTargetHumidity(targetHumidity);
         daikin.updateDaikinState(cParser.isVerboseOutput());

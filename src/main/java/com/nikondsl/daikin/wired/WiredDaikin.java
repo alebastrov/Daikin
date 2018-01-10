@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static com.nikondsl.daikin.wireless.WirelessDaikin.parseInt;
+
 /**
  * Code to control a Daikin heat pump via the KKRP01A online controller.
  * <p>
@@ -86,7 +88,7 @@ public class WiredDaikin extends DaikinBase {
             fan = parseFan(properties.get(4));
 
             // when setting to Dry mode the temp comes back as 50 - don't want to store this
-            double temp = parseDouble(properties.get(3));
+            int temp = parseInt(properties.get(3));
             if (!getMode().equals(Mode.Dry) || temp <= 32) {
                 targetTemperature = temp;
             }

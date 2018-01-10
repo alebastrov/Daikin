@@ -37,7 +37,7 @@ public class WirelessDaikin extends DaikinBase {
 
         sb.append("&stemp=");
         sb.append(getTargetTemperature());
-        parameters.put("stemp", "" + (int) getTargetTemperature());
+        parameters.put("stemp", "" + getTargetTemperature());
 
         sb.append("&f_rate=");
         sb.append(getFanCommand());
@@ -81,7 +81,7 @@ public class WirelessDaikin extends DaikinBase {
                     mode = parseMode(value);
                     break;
                 case "stemp":
-                    targetTemperature = parseDouble(value);
+                    targetTemperature = parseInt(value);
                     break;
                 case "shum":
                     targetHumidity = parseInt(value);

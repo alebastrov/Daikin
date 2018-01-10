@@ -14,7 +14,7 @@ public abstract class DaikinBase {
     protected final String host;
     @Getter
     @Setter
-    protected double targetTemperature = 0;
+    protected int targetTemperature = 0;
     @Getter
     @Setter
     protected boolean on = false;
@@ -25,10 +25,8 @@ public abstract class DaikinBase {
     @Setter
     protected Mode mode = Mode.None;
     @Getter
-    @Setter
     protected Fan fan = Fan.None;
     @Getter
-    @Setter
     protected FanDirection fanDirection = FanDirection.None;
     @Getter
     protected Timer timer = Timer.None;
