@@ -25,33 +25,33 @@ public class WirelessDaikin extends DaikinBase {
     public void updateDaikinState(boolean isVerboseOutput) {
         // posts the state of this object to the Daikin unit, updating it
         Map<String, String> parameters = new LinkedHashMap<>();
-        StringBuilder sb = new StringBuilder();
+        StringBuilder command = new StringBuilder();
 
-        sb.append("pow=");
-        sb.append(isOn() ? "1" : "0");
+        command.append("pow=");
+        command.append(isOn() ? "1" : "0");
         parameters.put("pow", isOn() ? "1" : "0");
 
-        sb.append("&mode=");
-        sb.append(getModeCommand());
+        command.append("&mode=");
+        command.append(getModeCommand());
         parameters.put("mode", getModeCommand());
 
-        sb.append("&stemp=");
-        sb.append(getTargetTemperature());
-        parameters.put("stemp", "" + getTargetTemperature());
+        command.append("&stemp=");
+        command.append(getTargetTemperature());
+        parameters.put("stemp", String.valueOf(getTargetTemperature()));
 
-        sb.append("&f_rate=");
-        sb.append(getFanCommand());
+        command.append("&f_rate=");
+        command.append(getFanCommand());
         parameters.put("f_rate", getFanCommand());
 
-        sb.append("&f_dir=");
-        sb.append(getFanDirectionCommand());
+        command.append("&f_dir=");
+        command.append(getFanDirectionCommand());
         parameters.put("f_dir", getFanDirectionCommand());
 
-        sb.append("&shum=");
-        sb.append(getTargetHumidity());
-        parameters.put("shum", "" + getTargetHumidity());
+        command.append("&shum=");
+        command.append(getTargetHumidity());
+        parameters.put("shum", String.valueOf(getTargetHumidity()));
 
-        RestConnector.submitPost(this, SET_CONTROL_INFO, sb.toString(), parameters, isVerboseOutput);
+        RestConnector.submitPost(this, SET_CONTROL_INFO, command.toString(), parameters, isVerboseOutput);
     }
 
     @Override
@@ -73,7 +73,6 @@ public class WirelessDaikin extends DaikinBase {
                     if (!"ok".equalsIgnoreCase(value))
                         throw new IllegalStateException("Invalid response, ret=" + value);
                     break;
-
                 case "pow":
                     on = "1".equals(value);
                     break;
@@ -100,7 +99,7 @@ public class WirelessDaikin extends DaikinBase {
                 case "b_f_rate":
                 case "b_f_dir":
                 case "b_stemp":
-                    // not sure?
+                    // we do not know exactly
                     break;
 
                 case "dt1":
@@ -109,7 +108,7 @@ public class WirelessDaikin extends DaikinBase {
                 case "dt4":
                 case "dt5":
                 case "dt7":
-                    // don't know what dt represents currently,
+                    // we do not know exactly (dest temp?)
                     break;
 
                 case "dhh":
@@ -201,7 +200,7 @@ public class WirelessDaikin extends DaikinBase {
         if (mode.equals(Mode.Cool)) return "3";
         if (mode.equals(Mode.Heat)) return "4";
         if (mode.equals(Mode.Fan)) return "6";
-        if (mode.equals(Mode.None)) return "";
+        if (mode.equals(Mode.None)) return "0";
 
         throw new IllegalArgumentException("Invalid or unsupported mode: " + mode);
     }
@@ -235,7 +234,7 @@ public class WirelessDaikin extends DaikinBase {
         if (value.equals("4")) return Mode.Heat;
         if (value.equals("6")) return Mode.Fan;
 
-        return Mode.None;
+        return Mode.Auto;
     }
 
     public static Fan parseFan(String value) {
