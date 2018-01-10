@@ -14,7 +14,7 @@ public abstract class DaikinBase {
     protected final String host;
     @Getter
     @Setter
-    protected int targetTemperature = 0;
+    protected int targetTemperature = 22;
     @Getter
     @Setter
     protected boolean on = false;
