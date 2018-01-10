@@ -11,11 +11,11 @@
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/io.rest-assured/rest-assured -->
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>3.0.6</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>io.rest-assured</groupId>-->
+            <!--<artifactId>rest-assured</artifactId>-->
+            <!--<version>3.0.6</version>-->
+        <!--</dependency>-->
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>
@@ -37,11 +37,11 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.4</version>
         </dependency>
-        <dependency>
-            <groupId>io.rest-assured</groupId>
-            <artifactId>rest-assured</artifactId>
-            <version>3.0.6</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>io.rest-assured</groupId>-->
+            <!--<artifactId>rest-assured</artifactId>-->
+            <!--<version>3.0.6</version>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>org.projectlombok</groupId>

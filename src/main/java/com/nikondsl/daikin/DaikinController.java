@@ -6,12 +6,6 @@ import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
-import io.restassured.config.HttpClientConfig;
-import io.restassured.config.RestAssuredConfig;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.SystemDefaultHttpClient;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -54,16 +48,6 @@ public class DaikinController {
 
         for (String arg : args) {
             if ("-scan".equals(arg)) {
-                HttpClientConfig clientConfig = RestAssuredConfig.config().getHttpClientConfig();
-                clientConfig = clientConfig.httpClientFactory(() -> {
-                    HttpClient rv = new SystemDefaultHttpClient();
-                    HttpParams httpParams = rv.getParams();
-                    HttpConnectionParams.setConnectionTimeout(httpParams, (int) TimeUnit.SECONDS.toMillis(1)); //Wait for a connection up to 1 sec
-                    HttpConnectionParams.setSoTimeout(httpParams, (int) TimeUnit.SECONDS.toMillis(2)); // Default socket timeout 2 sec
-                    return rv;
-                });
-                clientConfig = clientConfig.reuseHttpClientInstance();
-                RestAssuredConfig.config().httpClient(clientConfig);
                 ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
                 for (int i = 1; i <= 255; i++) {
                     final int ip = i;
