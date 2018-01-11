@@ -11,12 +11,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
 public class WirelessDaikin extends DaikinBase {
     private static final String GET_CONTROL_INFO = "/aircon/get_control_info";
     private static final String SET_CONTROL_INFO = "/aircon/set_control_info";
     private static final String GET_SENSOR_INFO = "/aircon/get_sensor_info";
-
+    
+    WirelessDaikin(){
+    }
+    
     public WirelessDaikin(String host, int port) {
         super(host, port);
     }
@@ -58,130 +60,152 @@ public class WirelessDaikin extends DaikinBase {
     public void readDaikinState(boolean verboseOutput) {
         // this returns a CSV line of properties and their values, which we 
         // then parse and store as properties on this Daikin instance
-        List<String> strings = RestConnector.submitGet(this, GET_CONTROL_INFO, verboseOutput);
-        if (strings == null || strings.isEmpty()) return;
-        String controlInfo = strings.get(0);
-        System.out.println("Got: " + controlInfo);
-        Map<String, String> properties = createMap(controlInfo);
-
-        for (Entry<String, String> property : properties.entrySet()) {
-            String key = property.getKey();
-            String value = property.getValue();
-
-            switch (key) {
-                case "ret":
-                    if (!"ok".equalsIgnoreCase(value))
-                        throw new IllegalStateException("Invalid response, ret=" + value);
-                    break;
-                case "pow":
-                    on = "1".equals(value);
-                    break;
-                case "mode":
-                    mode = parseMode(value);
-                    break;
-                case "stemp":
-                    targetTemperature = parseInt(value);
-                    break;
-                case "shum":
-                    targetHumidity = parseInt(value);
-                    break;
-                case "f_rate":
-                    fan = parseFan(value);
-                    break;
-                case "f_dir":
-                    fanDirection = parseFanDirection(value);
-                    break;
-
-                case "adv":
-                case "alert":
-                case "b_mode":
-                case "b_shum":
-                case "b_f_rate":
-                case "b_f_dir":
-                case "b_stemp":
-                    // we do not know exactly
-                    break;
-
-                case "dt1":
-                case "dt2":
-                case "dt3":
-                case "dt4":
-                case "dt5":
-                case "dt7":
-                    // we do not know exactly (dest temp?)
-                    break;
-
-                case "dhh":
-                case "dh1":
-                case "dh2":
-                case "dh3":
-                case "dh4":
-                case "dh5":
-                case "dh7":
-                    // dh represents target humidity for each DaikinMode
-                    break;
-
-                case "dfrh":
-                case "dfr1":
-                case "dfr2":
-                case "dfr3":
-                case "dfr4":
-                case "dfr5":
-                case "dfr6":
-                case "dfr7":
-                    // don't know what dfr represents currently,
-                    break;
-
-                case "dfdh":
-                case "dfd1":
-                case "dfd2":
-                case "dfd3":
-                case "dfd4":
-                case "dfd5":
-                case "dfd6":
-                case "dfd7":
-                    // don't know what dfd represents currently,
-                    break;
-
-                default:
-                    if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
-            }
+        List<String> strings = readFromAdapter(verboseOutput, GET_CONTROL_INFO);
+        if (strings == null || strings.isEmpty()) {
+            if (verboseOutput) System.err.println("Could not read anything from adapter");
+            return;
         }
+        String controlInfo = strings.get(0);
+        if (verboseOutput) System.out.println("Got for (" + GET_CONTROL_INFO + "): " + controlInfo);
+		parseControlInfoResponse(verboseOutput, controlInfo);
 
         // we also read in the sensor values that we care about
-        String sensorInfo = RestConnector.submitGet(this, GET_SENSOR_INFO, verboseOutput).get(0);
-        properties = createMap(sensorInfo);
-
-        for (Entry<String, String> property : properties.entrySet()) {
-            String key = property.getKey();
-            String value = property.getValue();
-            //ret=OK,htemp=26.0,hhum=-,otemp=2.5,err=0,cmpfreq=26
-            switch (key) {
-                case "ret":
-                    if (!"ok".equalsIgnoreCase(value))
-                        throw new IllegalStateException("Invalid response, ret=" + value);
-                    break;
-
-                case "hhum":
-                    if (!"-".equals(value)) setTargetHumidity(parseInt(value));
-                    break;
-                case "htemp":
-                    insideTemperature = parseDouble(value);
-                    break;
-                case "otemp":
-                    outsideTemperature = parseDouble(value);
-                    break;
-
-                case "err":
-                    break;
-                case "cmpfreq":
-                    break;
-                default:
-                    if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
-            }
-        }
+		strings = readFromAdapter(verboseOutput, GET_SENSOR_INFO);
+		if (strings == null || strings.isEmpty()) {
+			if (verboseOutput) System.err.println("Could not read anything from adapter");
+			return;
+		}
+		String sensorInfo = strings.get(0);
+		if (verboseOutput) System.out.println("Got for (" + GET_SENSOR_INFO + "): " + sensorInfo);
+		parseSensorResponse(verboseOutput, sensorInfo);
     }
+	
+	private void parseSensorResponse(boolean verboseOutput, String sensorInfo) {
+		Map<String, String> properties;
+		properties = createMap(sensorInfo);
+		
+		for (Entry<String, String> property : properties.entrySet()) {
+			String key = property.getKey();
+			String value = property.getValue();
+			//ret=OK,htemp=26.0,hhum=-,otemp=2.5,err=0,cmpfreq=26
+			switch (key) {
+				case "ret":
+					if (!"ok".equalsIgnoreCase(value))
+						throw new IllegalStateException("Invalid response, ret=" + value);
+					break;
 
+				case "hhum":
+					if (!"-".equals(value)) setTargetHumidity(parseInt(value));
+					break;
+				case "htemp":
+					insideTemperature = parseDouble(value);
+					break;
+				case "otemp":
+					outsideTemperature = parseDouble(value);
+					break;
+
+				case "err":
+					break;
+				case "cmpfreq":
+					break;
+				default:
+					if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
+			}
+		}
+	}
+	
+	private void parseControlInfoResponse(boolean verboseOutput, String controlInfo) {
+		Map<String, String> properties = createMap(controlInfo);
+		
+		for (Entry<String, String> property : properties.entrySet()) {
+			String key = property.getKey();
+			String value = property.getValue();
+
+			switch (key) {
+				case "ret":
+					if (!"ok".equalsIgnoreCase(value))
+						throw new IllegalStateException("Invalid response, ret=" + value);
+					break;
+				case "pow":
+					on = "1".equals(value);
+					break;
+				case "mode":
+					mode = parseMode(value);
+					break;
+				case "stemp":
+					targetTemperature = parseDouble(value);
+					break;
+				case "shum":
+					targetHumidity = parseInt(value);
+					break;
+				case "f_rate":
+					fan = parseFan(value);
+					break;
+				case "f_dir":
+					fanDirection = parseFanDirection(value);
+					break;
+
+				case "adv":
+				case "alert":
+				case "b_mode":
+				case "b_shum":
+				case "b_f_rate":
+				case "b_f_dir":
+				case "b_stemp":
+					// we do not know exactly
+					break;
+
+				case "dt1":
+				case "dt2":
+				case "dt3":
+				case "dt4":
+				case "dt5":
+				case "dt7":
+					// we do not know exactly (dest temp?)
+					break;
+
+				case "dhh":
+				case "dh1":
+				case "dh2":
+				case "dh3":
+				case "dh4":
+				case "dh5":
+				case "dh7":
+					// dh represents target humidity for each DaikinMode
+					break;
+
+				case "dfrh":
+				case "dfr1":
+				case "dfr2":
+				case "dfr3":
+				case "dfr4":
+				case "dfr5":
+				case "dfr6":
+				case "dfr7":
+					// don't know what dfr represents currently,
+					break;
+
+				case "dfdh":
+				case "dfd1":
+				case "dfd2":
+				case "dfd3":
+				case "dfd4":
+				case "dfd5":
+				case "dfd6":
+				case "dfd7":
+					// don't know what dfd represents currently,
+					break;
+
+				default:
+					if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
+			}
+		}
+	}
+	
+	List<String> readFromAdapter(boolean verboseOutput, String pathToApi) {
+        return RestConnector.submitGet(this, pathToApi, verboseOutput);
+    }
+    
     private Map<String, String> createMap(String controlInfo) {
         Map<String, String> properties = new HashMap<>();
         String[] splitString = controlInfo.split(",");

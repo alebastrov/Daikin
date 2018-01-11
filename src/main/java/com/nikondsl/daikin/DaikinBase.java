@@ -11,10 +11,10 @@ import lombok.Setter;
 public abstract class DaikinBase {
 
     @Getter
-    protected final String host;
+    protected String host;
     @Getter
     @Setter
-    protected int targetTemperature = 22;
+    protected double targetTemperature = 22;
     @Getter
     @Setter
     protected boolean on = false;
@@ -45,7 +45,10 @@ public abstract class DaikinBase {
         this.host = host;
         this.port = port;
     }
-
+    
+    protected DaikinBase() {
+    }
+    
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
