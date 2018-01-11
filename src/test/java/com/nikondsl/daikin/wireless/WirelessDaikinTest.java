@@ -37,5 +37,4 @@ public class WirelessDaikinTest {
 				"]", wirelessDaikin.toString());
 		assertEquals(80, wirelessDaikin.getPort());
 	}
-	
 }

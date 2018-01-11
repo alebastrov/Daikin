@@ -46,9 +46,6 @@ public abstract class DaikinBase {
         this.port = port;
     }
     
-    protected DaikinBase() {
-    }
-    
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();

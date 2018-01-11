@@ -16,9 +16,6 @@ public class WirelessDaikin extends DaikinBase {
     private static final String SET_CONTROL_INFO = "/aircon/set_control_info";
     private static final String GET_SENSOR_INFO = "/aircon/get_sensor_info";
     
-    WirelessDaikin(){
-    }
-    
     public WirelessDaikin(String host, int port) {
         super(host, port);
     }
