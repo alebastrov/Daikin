@@ -23,7 +23,7 @@ public abstract class DaikinBase {
     protected int targetHumidity = 0;
     @Getter
     @Setter
-    protected Mode mode = Mode.None;
+    protected Mode mode = Mode.Auto;
     @Getter
     @Setter
     protected Fan fan = Fan.None;
@@ -48,46 +48,46 @@ public abstract class DaikinBase {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder result = new StringBuilder();
 
         boolean isWirelessUnit = this instanceof WirelessDaikin;
 
-        sb.append(isWirelessUnit ? "Wireless " : "Wired ");
-        sb.append("Daikin unit [ ");
+        result.append(isWirelessUnit ? "Wireless " : "Wired ");
+        result.append("Daikin unit [ ");
 
-        sb.append("\n  Host: ");
-        sb.append(host);
+        result.append("\n  Host: ");
+        result.append(host);
 
-        sb.append("\n  Power: ");
-        sb.append(on ? "ON" : "OFF");
+        result.append("\n  Power: ");
+        result.append(on ? "ON" : "OFF");
 
-        sb.append("\n  Mode: ");
-        sb.append(mode);
+        result.append("\n  Mode: ");
+        result.append(mode);
 
-        sb.append("\n  Fan: ");
-        sb.append(fan);
+        result.append("\n  Fan: ");
+        result.append(fan);
 
-        sb.append("\n  Fan direction: ");
-        sb.append(fanDirection);
+        result.append("\n  Fan direction: ");
+        result.append(fanDirection);
 
-        sb.append("\n  Target humidity: ");
-        sb.append(targetHumidity);
+        result.append("\n  Target humidity: ");
+        result.append(targetHumidity);
 
-        sb.append("\n  Target temperature: ");
-        sb.append(targetTemperature);
+        result.append("\n  Target temperature: ");
+        result.append(targetTemperature);
 
-        sb.append("\n  Inside temperature: ");
-        sb.append(insideTemperature);
+        result.append("\n  Inside temperature: ");
+        result.append(insideTemperature);
 
-        sb.append("\n  Outside temperature: ");
-        sb.append(outsideTemperature);
+        result.append("\n  Outside temperature: ");
+        result.append(outsideTemperature);
 
-        sb.append("\n]");
+        result.append("\n]");
 
-        return sb.toString();
+        return result.toString();
     }
 
     public abstract void updateDaikinState(boolean isVerboseOutput);
 
-    public abstract void readDaikinState(boolean verboseOutput, boolean restAssuranceOnly);
+    public abstract void readDaikinState(boolean verboseOutput);
 }

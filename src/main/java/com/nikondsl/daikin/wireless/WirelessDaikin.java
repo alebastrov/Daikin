@@ -55,7 +55,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     @Override
-    public void readDaikinState(boolean verboseOutput, boolean restAssuranceOnly) {
+    public void readDaikinState(boolean verboseOutput) {
         // this returns a CSV line of properties and their values, which we 
         // then parse and store as properties on this Daikin instance
         List<String> strings = RestConnector.submitGet(this, GET_CONTROL_INFO, verboseOutput);
@@ -195,14 +195,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     private String getModeCommand() {
-        if (mode.equals(Mode.Auto)) return "0";
-        if (mode.equals(Mode.Dry)) return "2";
-        if (mode.equals(Mode.Cool)) return "3";
-        if (mode.equals(Mode.Heat)) return "4";
-        if (mode.equals(Mode.Fan)) return "6";
-        if (mode.equals(Mode.None)) return "0";
-
-        throw new IllegalArgumentException("Invalid or unsupported mode: " + mode);
+        return mode.getModeCommandForWireless();
     }
 
     private String getFanCommand() {
@@ -228,13 +221,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     public static Mode parseMode(String value) {
-        if (value.equals("0") || value.equals("1") || value.equals("7")) return Mode.Auto;
-        if (value.equals("2")) return Mode.Dry;
-        if (value.equals("3")) return Mode.Cool;
-        if (value.equals("4")) return Mode.Heat;
-        if (value.equals("6")) return Mode.Fan;
-
-        return Mode.Auto;
+        return Mode.valueOfWireless(value);
     }
 
     public static Fan parseFan(String value) {

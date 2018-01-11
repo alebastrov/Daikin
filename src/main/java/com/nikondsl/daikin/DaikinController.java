@@ -52,19 +52,7 @@ public class DaikinController {
                 for (int i = 1; i <= 255; i++) {
                     final int ip = i;
                     lookUpService.submit(() -> {
-                        com.nikondsl.daikin.DaikinBase daikin = getDaikin(args[1], ip, DEFAULT_PORT);
-                        java.util.List<String> rows = com.nikondsl.daikin.util.RestConnector.submitGet(daikin, "/common/basic_info", false);
-                        if (rows == null) {
-                            System.err.println("Scanned " + daikin.getHost() + ", not found");
-                            return;
-                        }
-                        String responseFromAirCon = rows.get(0);
-                        if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) {
-                            System.err.println("Scanned " + daikin.getHost() + ", found something");
-                            return;
-                        }
-                        String name = java.net.URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
-                        System.err.println("Found Daikin [" + name + "] at " + daikin.getHost());
+                        checkApiExist(getDaikin(args[1], ip, DEFAULT_PORT));
                     });
                 }
                 lookUpService.shutdown();
@@ -84,7 +72,7 @@ public class DaikinController {
                     int seconds = Integer.parseInt(secondsToSleep);
                     if (seconds > TimeUnit.MINUTES.toMillis(5) || seconds == 0) seconds = 60;
                     try {
-                        daikin.readDaikinState(cParser.isVerboseOutput(), true);
+                        daikin.readDaikinState(cParser.isVerboseOutput());
 
                         if (cParser.getWriteToFile() != null && cParser.getWriteToFile().length() > 0) {
                             tryWriteToFile(cParser.getWriteToFile(), daikin);
@@ -100,12 +88,12 @@ public class DaikinController {
         }
 
 
-        daikin.readDaikinState(cParser.isVerboseOutput(), true);
+        daikin.readDaikinState(cParser.isVerboseOutput());
         System.err.println("State before: " + daikin);
 
         daikin.setOn("on".equalsIgnoreCase(cParser.getPower()));
         Mode targetMode = WirelessDaikin.parseMode(cParser.getMode());
-        if (targetMode != Mode.None) daikin.setMode(targetMode);
+        daikin.setMode(targetMode);
         Fan targetFan = WirelessDaikin.parseFan(cParser.getFan());
         if (targetFan != Fan.None) daikin.setFan(targetFan);
         FanDirection targetFanDirection = WirelessDaikin.parseFanDirection(cParser.getFanDirection());
@@ -116,9 +104,25 @@ public class DaikinController {
         if (targetHumidity > 0 && targetHumidity < 100) daikin.setTargetHumidity(targetHumidity);
         daikin.updateDaikinState(cParser.isVerboseOutput());
 
-        daikin.readDaikinState(cParser.isVerboseOutput(), true);
+        daikin.readDaikinState(cParser.isVerboseOutput());
 
         System.err.println("State after: " + daikin);
+    }
+
+    private static void checkApiExist(DaikinBase daikin1) {
+        DaikinBase daikin = daikin1;
+        java.util.List<String> rows = com.nikondsl.daikin.util.RestConnector.submitGet(daikin, "/common/basic_info", false);
+        if (rows == null) {
+            System.err.println("Scanned " + daikin.getHost() + ", not found");
+            return;
+        }
+        String responseFromAirCon = rows.get(0);
+        if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) {
+            System.err.println("Scanned " + daikin.getHost() + ", found something");
+            return;
+        }
+        String name = java.net.URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
+        System.err.println("Found Daikin [" + name + "] at " + daikin.getHost());
     }
 
     private static DaikinBase getDaikin(String subNet, final int ip, int port) {
@@ -132,7 +136,7 @@ public class DaikinController {
             }
 
             @Override
-            public void readDaikinState(boolean verboseOutput, boolean restAssuranceOnly) {
+            public void readDaikinState(boolean verboseOutput) {
             }
         };
     }
