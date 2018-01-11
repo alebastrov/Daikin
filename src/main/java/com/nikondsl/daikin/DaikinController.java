@@ -5,9 +5,11 @@ import com.beust.jcommander.Strings;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
+import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,8 +28,9 @@ public class DaikinController {
 
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
-
-    public static void main(String[] args) throws InterruptedException {
+	public static final String COMMON_BASIC_INFO = "/common/basic_info";
+	
+	public static void main(String[] args) throws InterruptedException {
         if (args.length == 0) {
             System.err.println("Possible commands:");
             System.err.println("-scan (192.168.1), possible values: (any subnet to scan ip addresses from 1 tp 255) ");
@@ -49,10 +53,11 @@ public class DaikinController {
         for (String arg : args) {
             if ("-scan".equals(arg)) {
                 ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
+				final DaikinController controller = new DaikinController();
                 for (int i = 1; i <= 255; i++) {
                     final int ip = i;
                     lookUpService.submit(() -> {
-                        checkApiExist(getDaikin(args[1], ip, DEFAULT_PORT));
+                        controller.checkApiExist(getDaikin(args[1], ip, DEFAULT_PORT));
                     });
                 }
                 lookUpService.shutdown();
@@ -109,23 +114,27 @@ public class DaikinController {
         System.err.println("State after: " + daikin);
     }
 
-    private static void checkApiExist(DaikinBase daikin1) {
-        DaikinBase daikin = daikin1;
-        java.util.List<String> rows = com.nikondsl.daikin.util.RestConnector.submitGet(daikin, "/common/basic_info", false);
+	String checkApiExist(DaikinBase daikin) {
+        List<String> rows = readIdentificationResponse(daikin);
         if (rows == null) {
             System.err.println("Scanned " + daikin.getHost() + ", not found");
-            return;
+            return null;
         }
         String responseFromAirCon = rows.get(0);
         if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) {
             System.err.println("Scanned " + daikin.getHost() + ", found something");
-            return;
+            return null;
         }
-        String name = java.net.URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
+        String name = URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
         System.err.println("Found Daikin [" + name + "] at " + daikin.getHost());
+        return name;
     }
-
-    private static DaikinBase getDaikin(String subNet, final int ip, int port) {
+	
+	List<String> readIdentificationResponse(DaikinBase daikin) {
+		return RestConnector.submitGet(daikin, COMMON_BASIC_INFO, false);
+	}
+	
+	private static DaikinBase getDaikin(String subNet, final int ip, int port) {
         if (Strings.isStringEmpty(subNet)) subNet = "192.168.1.";
         else subNet = subNet.replaceAll("((1?[0-9]{1,2}|2[0-4][0-9]|25[0-5]\\.){3})", "$1");
         if (!subNet.endsWith(".")) subNet += ".";
