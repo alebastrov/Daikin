@@ -127,7 +127,7 @@ public class WirelessDaikin extends DaikinBase {
 					on = "1".equals(value);
 					break;
 				case "mode":
-					mode = parseMode(value);
+					mode = Mode.valueOfWireless(value);
 					break;
 				case "stemp":
 					targetTemperature = parseDouble(value);
@@ -136,7 +136,7 @@ public class WirelessDaikin extends DaikinBase {
 					targetHumidity = parseInt(value);
 					break;
 				case "f_rate":
-					fan = parseFan(value);
+					fan = Fan.valueOfWirelessCommand(value);
 					break;
 				case "f_dir":
 					fanDirection = parseFanDirection(value);
@@ -233,15 +233,7 @@ public class WirelessDaikin extends DaikinBase {
         throw new IllegalArgumentException("Invalid or unsupported fan direction: " + fanDirection);
     }
 
-    public static Mode parseMode(String value) {
-        return Mode.valueOfWireless(value);
-    }
-
-    public static Fan parseFan(String value) {
-        return Fan.valueOfWirelessCommand(value);
-    }
-
-    public static FanDirection parseFanDirection(String value) {
+	public static FanDirection parseFanDirection(String value) {
         if (value.equals("0")) return FanDirection.None;
         if (value.equals("1")) return FanDirection.Vertical;
         if (value.equals("2")) return FanDirection.Horizontal;
