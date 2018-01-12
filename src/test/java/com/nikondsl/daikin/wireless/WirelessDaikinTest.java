@@ -28,7 +28,7 @@ public class WirelessDaikinTest {
 				"  Host: ip.address\n" +
 				"  Power: ON\n" +
 				"  Mode: Heat\n" +
-				"  Fan: Auto\n" +
+				"  Fan: None\n" +
 				"  Fan direction: None\n" +
 				"  Target humidity: 0\n" +
 				"  Target temperature: 24.0\n" +

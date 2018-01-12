@@ -220,15 +220,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     private String getFanCommand() {
-        if (fan.equals(Fan.Auto)) return "A";
-        if (fan.equals(Fan.F1)) return "3";
-        if (fan.equals(Fan.F2)) return "4";
-        if (fan.equals(Fan.F3)) return "5";
-        if (fan.equals(Fan.F4)) return "6";
-        if (fan.equals(Fan.F5)) return "7";
-        if (fan.equals(Fan.None)) return "B";
-
-        throw new IllegalArgumentException("Invalid or unsupported fan: " + fan);
+    	return fan.getWirelessCommand();
     }
 
     private String getFanDirectionCommand() {
@@ -246,16 +238,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     public static Fan parseFan(String value) {
-        if (value.equalsIgnoreCase("A")) return Fan.Auto;
-        if (value.equals("1")) return Fan.F1;
-        if (value.equals("2")) return Fan.F1;
-        if (value.equals("3")) return Fan.F1;
-        if (value.equals("4")) return Fan.F2;
-        if (value.equals("5")) return Fan.F3;
-        if (value.equals("6")) return Fan.F4;
-        if (value.equals("7")) return Fan.F5;
-
-        return Fan.None;
+        return Fan.valueOfWirelessCommand(value);
     }
 
     public static FanDirection parseFanDirection(String value) {

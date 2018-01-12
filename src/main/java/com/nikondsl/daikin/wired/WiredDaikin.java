@@ -118,15 +118,7 @@ public class WiredDaikin extends DaikinBase {
     }
 
     private String getFanCommand() {
-        if (fan.equals(Fan.Auto)) return "FAuto";
-        if (fan.equals(Fan.F1)) return "Fun1";
-        if (fan.equals(Fan.F2)) return "Fun2";
-        if (fan.equals(Fan.F3)) return "Fun3";
-        if (fan.equals(Fan.F4)) return "Fun4";
-        if (fan.equals(Fan.F5)) return "Fun5";
-        if (fan.equals(Fan.None)) return "None";
-
-        throw new IllegalArgumentException("Invalid or unsupported fan: " + fan);
+        return fan.getWiredCommand();
     }
 
     private String getFanDirectionCommand() {
@@ -138,14 +130,7 @@ public class WiredDaikin extends DaikinBase {
     }
 
     private Fan parseFan(String value) {
-        if (value.equals("FA")) return Fan.Auto;
-        if (value.equals("F1")) return Fan.F1;
-        if (value.equals("F2")) return Fan.F2;
-        if (value.equals("F3")) return Fan.F3;
-        if (value.equals("F4")) return Fan.F4;
-        if (value.equals("F5")) return Fan.F5;
-
-        return Fan.None;
+        return Fan.valueOfWiredCommand(value);
     }
 
     private FanDirection parseFanDirection(String value) {
