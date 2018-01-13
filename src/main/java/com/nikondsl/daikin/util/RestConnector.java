@@ -11,12 +11,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import sun.misc.IOUtils;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class RestConnector {
@@ -38,7 +39,7 @@ public class RestConnector {
                 System.err.println("request=" + httpGet.toString());
                 System.err.println("response=" + EntityUtils.toString(response.getEntity()));
             }
-            return Collections.singletonList(new String(IOUtils.readFully(response.getEntity().getContent(), (int)response.getEntity().getContentLength(), true)));
+            return Collections.singletonList(convertStreamToString(response.getEntity().getContent()));
         } catch (Exception ex) {
             return null;
         }
@@ -62,5 +63,10 @@ public class RestConnector {
         } catch (Exception ex) {
             return null;
         }
+    }
+    
+    static String convertStreamToString(InputStream is) {
+        Scanner s = new Scanner(is,"UTF-8").useDelimiter("\\A");
+        return s.hasNext() ? s.next() : "";
     }
 }
