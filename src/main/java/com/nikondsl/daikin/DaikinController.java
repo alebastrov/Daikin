@@ -57,7 +57,7 @@ public class DaikinController {
                 for (int i = 1; i <= 255; i++) {
                     final int ip = i;
                     lookUpService.submit(() -> {
-                        controller.checkApiExist(getDaikin(args[1], ip, DEFAULT_PORT));
+                        controller.checkApiExist(getDaikin(args.length>1?args[1]:"", ip, DEFAULT_PORT));
                     });
                 }
                 lookUpService.shutdown();
