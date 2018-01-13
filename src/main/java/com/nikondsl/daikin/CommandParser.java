@@ -2,8 +2,18 @@ package com.nikondsl.daikin;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.nikondsl.daikin.enums.Fan;
+import com.nikondsl.daikin.enums.FanDirection;
+import com.nikondsl.daikin.enums.Mode;
 import lombok.Getter;
 import lombok.Setter;
+
+import static com.nikondsl.daikin.enums.Fan.F1;
+import static com.nikondsl.daikin.enums.Fan.F2;
+import static com.nikondsl.daikin.enums.Fan.F3;
+import static com.nikondsl.daikin.enums.Fan.F4;
+import static com.nikondsl.daikin.enums.Fan.F5;
+import static com.nikondsl.daikin.enums.Fan.Silent;
 
 
 @Parameters(separators = "=")
@@ -37,7 +47,6 @@ public class CommandParser {
     private String targetHumudity = "";
 
     @Parameter(names = "-fan")
-	@Getter
     private String fan = "silent";
 
     @Parameter(names = "-direction")
@@ -73,21 +82,24 @@ public class CommandParser {
         return checkEvery;
     }
 
-    public String getMode() {
-        if (mode.equalsIgnoreCase("Auto")) return "0";
-        if (mode.equalsIgnoreCase("Dry")) return "2";
-        if (mode.equalsIgnoreCase("Cool")) return "3";
-        if (mode.equalsIgnoreCase("Heat")) return "4";
-        if (mode.equalsIgnoreCase("Fan")) return "6";
-        return "";
+    public Mode parseModeConsoleCommand() {
+    	
+        if (mode.equalsIgnoreCase("Auto")) return Mode.Auto;
+        if (mode.equalsIgnoreCase("Dry")) return Mode.Dry;
+        if (mode.equalsIgnoreCase("Cool")) return Mode.Cool;
+        if (mode.equalsIgnoreCase("Heat")) return Mode.Heat;
+        if (mode.equalsIgnoreCase("Fan")) return Mode.Fan;
+        return Mode.OnlyFun;
     }
 	
-	public String getFanDirection() {
-        if ("v".equalsIgnoreCase(fanDirection)) return "1";
-        if ("h".equalsIgnoreCase(fanDirection)) return "2";
-        if ("hv".equalsIgnoreCase(fanDirection) || "vh".equalsIgnoreCase(fanDirection)) return "3";
-        return fanDirection;
-    }
+	public FanDirection parseFanDirectionConsoleCommand() {
+		if ("v".equalsIgnoreCase(fanDirection)) return FanDirection.Vertical;
+		if ("h".equalsIgnoreCase(fanDirection)) return FanDirection.Horizontal;
+		if ("hv".equalsIgnoreCase(fanDirection)) return FanDirection.VerticalAndHorizontal;
+		if ("vh".equalsIgnoreCase(fanDirection)) return FanDirection.VerticalAndHorizontal;
+		
+		return FanDirection.Off;
+	}
 
     public Long getTimeoutConnection() {
         try {
@@ -106,6 +118,14 @@ public class CommandParser {
             return null;
         }
     }
-
-
+	
+	public Fan parseFanConsoleCommand() {
+		if ("silent".equalsIgnoreCase(fan)) return Silent;
+		if ("1".equals(fan)) return F1;
+		if ("2".equals(fan)) return F2;
+		if ("3".equals(fan)) return F3;
+		if ("4".equals(fan)) return F4;
+		if ("5".equals(fan)) return F5;
+		return Fan.Auto;
+	}
 }

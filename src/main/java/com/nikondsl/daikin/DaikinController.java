@@ -97,11 +97,11 @@ public class DaikinController {
         System.err.println("State before: " + daikin);
 
         daikin.setOn("on".equalsIgnoreCase(cParser.getPower()));
-        Mode targetMode = Mode.valueOfWireless(cParser.getMode());
+        Mode targetMode = cParser.parseModeConsoleCommand();
         daikin.setMode(targetMode);
-        Fan targetFan = Fan.parseFanConsoleCommand(cParser.getFan());
+        Fan targetFan = cParser.parseFanConsoleCommand();
         daikin.setFan(targetFan);
-        FanDirection targetFanDirection = WirelessDaikin.parseFanDirection(cParser.getFanDirection());
+        FanDirection targetFanDirection = cParser.parseFanDirectionConsoleCommand();
         daikin.setFanDirection(targetFanDirection);
         int targetTemperature = WirelessDaikin.parseInt(cParser.getTargetTemperature());
         if (targetTemperature >= 10 && targetTemperature <= 32) daikin.setTargetTemperature(targetTemperature);

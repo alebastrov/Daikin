@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 public class WirelessDaikin extends DaikinBase {
     private static final String GET_CONTROL_INFO = "/aircon/get_control_info";
     private static final String SET_CONTROL_INFO = "/aircon/set_control_info";
@@ -43,8 +44,8 @@ public class WirelessDaikin extends DaikinBase {
         parameters.put("f_rate", getFanCommand());
 
         command.append("&f_dir=");
-        command.append(getFanDirectionCommand());
-        parameters.put("f_dir", getFanDirectionCommand());
+        command.append(fanDirection.getWirelessCommand());
+        parameters.put("f_dir", fanDirection.getWirelessCommand());
 
         command.append("&shum=");
         command.append(getTargetHumidity());
@@ -139,7 +140,7 @@ public class WirelessDaikin extends DaikinBase {
 					fan = Fan.valueOfWirelessCommand(value);
 					break;
 				case "f_dir":
-					fanDirection = parseFanDirection(value);
+					fanDirection = FanDirection.valueOfWirelessCommand(value);
 					break;
 
 				case "adv":
@@ -221,24 +222,6 @@ public class WirelessDaikin extends DaikinBase {
 
     private String getFanCommand() {
     	return fan.getWirelessCommand();
-    }
-
-    private String getFanDirectionCommand() {
-        if (fanDirection.equals(FanDirection.Off)) return "0";
-        if (fanDirection.equals(FanDirection.Vertical)) return "1";
-        if (fanDirection.equals(FanDirection.Horizontal)) return "2";
-        if (fanDirection.equals(FanDirection.VerticalAndHorizontal)) return "3";
-
-        throw new IllegalArgumentException("Invalid or unsupported fan direction: " + fanDirection);
-    }
-
-	public static FanDirection parseFanDirection(String value) {
-        if (value.equals("0")) return FanDirection.Off;
-        if (value.equals("1")) return FanDirection.Vertical;
-        if (value.equals("2")) return FanDirection.Horizontal;
-        if (value.equals("3")) return FanDirection.VerticalAndHorizontal;
-
-        return FanDirection.Off;
     }
 
     public static double parseDouble(String value) {
