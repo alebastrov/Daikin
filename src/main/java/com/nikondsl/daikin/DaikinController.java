@@ -49,11 +49,10 @@ public class DaikinController {
             System.err.println("-check.every (), possible values: (1-3600 seconds)");
             return;
         }
-
+		final DaikinController controller = new DaikinController();
         for (String arg : args) {
             if ("-scan".equals(arg)) {
                 ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
-				final DaikinController controller = new DaikinController();
                 for (int i = 1; i <= 255; i++) {
                     final int ip = i;
                     lookUpService.submit(() -> {
@@ -69,7 +68,8 @@ public class DaikinController {
         CommandParser cParser = new CommandParser();
         new JCommander(cParser, args);
         DaikinBase daikin = DaikinFactory.createWirelessDaikin(String.format("%1s://%2s", cParser.getProtocol(), cParser.getHost()), Integer.parseInt(cParser.getPort()));
-
+		
+		final String nameOfUnit = controller.checkApiExist(daikin);
         if (cParser.getCheckEvery() != null && cParser.getCheckEvery().length() > 0) {
             String secondsToSleep = cParser.getCheckEvery().replaceAll("\\D", "");
             if (secondsToSleep.length() > 0) {
@@ -80,7 +80,7 @@ public class DaikinController {
                         daikin.readDaikinState(cParser.isVerboseOutput());
 
                         if (cParser.getWriteToFile() != null && cParser.getWriteToFile().length() > 0) {
-                            tryWriteToFile(cParser.getWriteToFile(), daikin);
+                            tryWriteToFile(cParser.getWriteToFile(), daikin, nameOfUnit);
                         }
 
                         sleep(seconds);
@@ -91,10 +91,9 @@ public class DaikinController {
                 }
             }
         }
-
-
+		
         daikin.readDaikinState(cParser.isVerboseOutput());
-        System.err.println("State before: " + daikin);
+        System.err.println("State before for [" + nameOfUnit + "]: " + daikin);
 
         daikin.setOn("on".equalsIgnoreCase(cParser.getPower()));
         Mode targetMode = cParser.parseModeConsoleCommand();
@@ -110,8 +109,7 @@ public class DaikinController {
         daikin.updateDaikinState(cParser.isVerboseOutput());
 
         daikin.readDaikinState(cParser.isVerboseOutput());
-
-        System.err.println("State after: " + daikin);
+        System.err.println("State after for [" + nameOfUnit + "]: " + daikin);
     }
 
 	String checkApiExist(DaikinBase daikin) {
@@ -159,7 +157,7 @@ public class DaikinController {
         }
     }
 
-    private static void tryWriteToFile(String writeToFile, DaikinBase daikin) throws IOException {
+    private static void tryWriteToFile(String writeToFile, DaikinBase daikin, String nameOfUnit) throws IOException {
         Path filePath = Paths.get(writeToFile);
         if (!Files.exists(filePath)) {
             filePath = Files.createFile(filePath);
@@ -180,8 +178,8 @@ public class DaikinController {
                 toFormatter();
         LocalDateTime dateTime = LocalDateTime.now();
 
-        String s = dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
-        System.out.println(s);
-        Files.write(filePath, s.getBytes("UTF-8"), StandardOpenOption.APPEND);
+        String result = dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
+        System.out.println(nameOfUnit + ", " + result);
+        Files.write(filePath, result.getBytes("UTF-8"), StandardOpenOption.APPEND);
     }
 }
