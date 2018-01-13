@@ -26,7 +26,7 @@ public abstract class DaikinBase {
     protected Mode mode = Mode.Auto;
     @Getter
     @Setter
-    protected Fan fan = Fan.None;
+    protected Fan fan = Fan.Silent;
     @Getter
     @Setter
     protected FanDirection fanDirection = FanDirection.None;
