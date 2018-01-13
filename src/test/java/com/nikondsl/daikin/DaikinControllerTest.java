@@ -10,6 +10,7 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 @RunWith(MockitoJUnitRunner.class)
 public class DaikinControllerTest {
@@ -19,7 +20,7 @@ public class DaikinControllerTest {
 	private DaikinBase daikinBase;
 	
 	@Spy
-	private DaikinController daikinController;
+	private DaikinController daikinController = spy(new DaikinController());
 	
 	@Test
 	public void testScanResponseParse() {
