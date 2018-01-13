@@ -35,13 +35,13 @@ public class DaikinController {
             System.err.println("Possible commands:");
             System.err.println("-scan (192.168.1), possible values: (any subnet to scan ip addresses from 1 tp 255) ");
             System.err.println("-protocol (http), possible values: (http|https)");
-            System.err.println("-host (192.168.1.165)");
+            System.err.println("-host (), possible value: (any ipv4 address)");
             System.err.println("-port (80)");
             System.err.println("-power (on), possible values: (on|off)");
             System.err.println("-mode (auto), possible values: (auto|dry|cool|heat|fan)");
             System.err.println("-temp (22), possible values: any integer >= 10 and <= 32");
             System.err.println("-humid (3)");
-            System.err.println("-fan (1), possible values: (silent|auto|1|2|3|4|5)");
+            System.err.println("-fan (auto), possible values: (silent|auto|1|2|3|4|5)");
             System.err.println("-direction (), possible values: (|h|v|hv|vh)");
             System.err.println("-verbose (), possible values: (|any)");
             System.err.println("-port (80)");

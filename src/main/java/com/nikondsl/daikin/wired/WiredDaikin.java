@@ -90,7 +90,7 @@ public class WiredDaikin extends DaikinBase {
         }
 
         // read-only state
-        fanDirection = parseFanDirection(properties.get(5));
+        fanDirection = FanDirection.valueOfWiredCommand(properties.get(5));
         timer = parseTimer(properties.get(7));
 
         // sensors
@@ -130,14 +130,6 @@ public class WiredDaikin extends DaikinBase {
 
     private Fan parseFan(String value) {
         return Fan.valueOfWiredCommand(value);
-    }
-
-    private FanDirection parseFanDirection(String value) {
-        if (value.equalsIgnoreCase("UD")) return FanDirection.Vertical;
-        if (value.equalsIgnoreCase("UD")) return FanDirection.Horizontal;
-        if (value.equalsIgnoreCase("UD")) return FanDirection.VerticalAndHorizontal;
-        
-        return FanDirection.Off;
     }
 
     private Timer parseTimer(String value) {

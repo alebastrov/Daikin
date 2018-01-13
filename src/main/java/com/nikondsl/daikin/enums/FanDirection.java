@@ -25,4 +25,11 @@ public enum FanDirection {
 		}
 		return Off;
 	}
+	
+	public static FanDirection valueOfWiredCommand(String value) {
+		for (FanDirection fanDirection : values()) {
+			if (fanDirection.getWirelessCommand().equalsIgnoreCase(value)) return fanDirection;
+		}
+		return Off;
+	}
 }

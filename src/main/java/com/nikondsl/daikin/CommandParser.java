@@ -15,7 +15,6 @@ import static com.nikondsl.daikin.enums.Fan.F4;
 import static com.nikondsl.daikin.enums.Fan.F5;
 import static com.nikondsl.daikin.enums.Fan.Silent;
 
-
 @Parameters(separators = "=")
 public class CommandParser {
     @Parameter(names = "-protocol")
@@ -83,12 +82,11 @@ public class CommandParser {
     }
 
     public Mode parseModeConsoleCommand() {
-    	
-        if (mode.equalsIgnoreCase("Auto")) return Mode.Auto;
-        if (mode.equalsIgnoreCase("Dry")) return Mode.Dry;
-        if (mode.equalsIgnoreCase("Cool")) return Mode.Cool;
-        if (mode.equalsIgnoreCase("Heat")) return Mode.Heat;
-        if (mode.equalsIgnoreCase("Fan")) return Mode.Fan;
+        if ("Auto".equalsIgnoreCase(mode)) return Mode.Auto;
+        if ("Dry".equalsIgnoreCase(mode)) return Mode.Dry;
+        if ("Cool".equalsIgnoreCase(mode)) return Mode.Cool;
+        if ("Heat".equalsIgnoreCase(mode)) return Mode.Heat;
+        if ("Fan".equalsIgnoreCase(mode)) return Mode.Fan;
         return Mode.OnlyFun;
     }
 	
@@ -97,7 +95,6 @@ public class CommandParser {
 		if ("h".equalsIgnoreCase(fanDirection)) return FanDirection.Horizontal;
 		if ("hv".equalsIgnoreCase(fanDirection)) return FanDirection.VerticalAndHorizontal;
 		if ("vh".equalsIgnoreCase(fanDirection)) return FanDirection.VerticalAndHorizontal;
-		
 		return FanDirection.Off;
 	}
 
