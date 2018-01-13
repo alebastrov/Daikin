@@ -225,7 +225,6 @@ public class WirelessDaikin extends DaikinBase {
 
     private String getFanDirectionCommand() {
         if (fanDirection.equals(FanDirection.Off)) return "0";
-        if (fanDirection.equals(FanDirection.None)) return "0";
         if (fanDirection.equals(FanDirection.Vertical)) return "1";
         if (fanDirection.equals(FanDirection.Horizontal)) return "2";
         if (fanDirection.equals(FanDirection.VerticalAndHorizontal)) return "3";
@@ -234,7 +233,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
 	public static FanDirection parseFanDirection(String value) {
-        if (value.equals("0")) return FanDirection.None;
+        if (value.equals("0")) return FanDirection.Off;
         if (value.equals("1")) return FanDirection.Vertical;
         if (value.equals("2")) return FanDirection.Horizontal;
         if (value.equals("3")) return FanDirection.VerticalAndHorizontal;

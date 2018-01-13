@@ -123,7 +123,6 @@ public class WiredDaikin extends DaikinBase {
 
     private String getFanDirectionCommand() {
         if (fanDirection.equals(FanDirection.Off)) return "Off";
-        if (fanDirection.equals(FanDirection.None)) return "Silent";
         if (fanDirection.equals(FanDirection.Vertical)) return "Ud";
 
         throw new IllegalArgumentException("Invalid or unsupported fan direction: " + fanDirection);
@@ -134,10 +133,11 @@ public class WiredDaikin extends DaikinBase {
     }
 
     private FanDirection parseFanDirection(String value) {
-        if (value.equals("UD")) return FanDirection.Vertical;
-        if (value.equals("OFF")) return FanDirection.Off;
-
-        return FanDirection.None;
+        if (value.equalsIgnoreCase("UD")) return FanDirection.Vertical;
+        if (value.equalsIgnoreCase("UD")) return FanDirection.Horizontal;
+        if (value.equalsIgnoreCase("UD")) return FanDirection.VerticalAndHorizontal;
+        
+        return FanDirection.Off;
     }
 
     private Timer parseTimer(String value) {

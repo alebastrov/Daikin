@@ -29,7 +29,7 @@ public abstract class DaikinBase {
     protected Fan fan = Fan.Silent;
     @Getter
     @Setter
-    protected FanDirection fanDirection = FanDirection.None;
+    protected FanDirection fanDirection = FanDirection.Off;
     @Getter
     protected Timer timer = Timer.None;
     @Getter
