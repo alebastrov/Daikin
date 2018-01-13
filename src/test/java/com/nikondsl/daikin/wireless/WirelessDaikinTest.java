@@ -8,7 +8,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 
 @RunWith(MockitoJUnitRunner.class)
 public class WirelessDaikinTest {
@@ -19,8 +19,8 @@ public class WirelessDaikinTest {
 	
 	@Test
 	public void testParseStatusResponses() {
-		when(wirelessDaikin.readFromAdapter(true, "/aircon/get_control_info")).thenReturn((Collections.singletonList(controlResponse)));
-		when(wirelessDaikin.readFromAdapter(true, "/aircon/get_sensor_info")).thenReturn((Collections.singletonList(sensorResponse)));
+		doReturn(Collections.singletonList(controlResponse)).when(wirelessDaikin).readFromAdapter(true, "/aircon/get_control_info");
+		doReturn(Collections.singletonList(sensorResponse)).when(wirelessDaikin).readFromAdapter(true, "/aircon/get_sensor_info");
 		
 		wirelessDaikin.readDaikinState(true);
 		
