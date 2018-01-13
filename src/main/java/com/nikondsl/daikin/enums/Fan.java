@@ -45,4 +45,15 @@ public enum Fan {
 
         return Silent;
     }
+    
+	public static Fan parseFanConsoleCommand(String fan) {
+		if ("silent".equalsIgnoreCase(fan)) return Silent;
+		if ("1".equals(fan)) return F1;
+		if ("2".equals(fan)) return F2;
+		if ("3".equals(fan)) return F3;
+		if ("4".equals(fan)) return F4;
+		if ("5".equals(fan)) return F5;
+		return Auto;
+	}
+	
 }

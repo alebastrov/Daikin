@@ -41,7 +41,7 @@ public class DaikinController {
             System.err.println("-mode (auto), possible values: (auto|dry|cool|heat|fan)");
             System.err.println("-temp (22), possible values: any integer >= 10 and <= 32");
             System.err.println("-humid (3)");
-            System.err.println("-fan (1), possible values: (a|1|2|3|4|5)");
+            System.err.println("-fan (1), possible values: (silent|auto|1|2|3|4|5)");
             System.err.println("-direction (), possible values: (|h|v|hv|vh)");
             System.err.println("-verbose (), possible values: (|any)");
             System.err.println("-port (80)");
@@ -99,7 +99,7 @@ public class DaikinController {
         daikin.setOn("on".equalsIgnoreCase(cParser.getPower()));
         Mode targetMode = Mode.valueOfWireless(cParser.getMode());
         daikin.setMode(targetMode);
-        Fan targetFan = Fan.valueOfWirelessCommand(cParser.getFan());
+        Fan targetFan = Fan.parseFanConsoleCommand(cParser.getFan());
         daikin.setFan(targetFan);
         FanDirection targetFanDirection = WirelessDaikin.parseFanDirection(cParser.getFanDirection());
         daikin.setFanDirection(targetFanDirection);
