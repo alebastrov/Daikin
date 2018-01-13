@@ -178,8 +178,8 @@ public class DaikinController {
                 toFormatter();
         LocalDateTime dateTime = LocalDateTime.now();
 
-        String result = dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
-        System.out.println(nameOfUnit + ", " + result);
+        String result = nameOfUnit + ", " + dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
+        System.out.println(result);
         Files.write(filePath, result.getBytes("UTF-8"), StandardOpenOption.APPEND);
     }
 }
