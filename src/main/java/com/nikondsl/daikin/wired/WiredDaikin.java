@@ -71,7 +71,7 @@ public class WiredDaikin extends DaikinBase {
     }
 
     @Override
-    public void readDaikinState(boolean verboseOutput, boolean restAssuranceOnly) {
+    public void readDaikinState(boolean verboseOutput) {
         // returns a line delimited list of values, with a '.' after each value
         List<String> properties = parseProperties(RestConnector.submitGet(this, GET_STATE, verboseOutput));
 
@@ -84,18 +84,13 @@ public class WiredDaikin extends DaikinBase {
         //       values get cleared and when we switch on we reset state
         on = properties.get(1).equals("ON");
         if (on) {
-            mode = parseMode(properties.get(2));
+            mode = Mode.valueOfWired(properties.get(2));
             fan = parseFan(properties.get(4));
-
-            // when setting to Dry mode the temp comes back as 50 - don't want to store this
-            int temp = parseInt(properties.get(3));
-            if (!getMode().equals(Mode.Dry) || temp <= 32) {
-                targetTemperature = temp;
-            }
+            targetTemperature = parseInt(properties.get(3));
         }
 
         // read-only state
-        fanDirection = parseFanDirection(properties.get(5));
+        fanDirection = FanDirection.valueOfWiredCommand(properties.get(5));
         timer = parseTimer(properties.get(7));
 
         // sensors
@@ -119,65 +114,22 @@ public class WiredDaikin extends DaikinBase {
     }
 
     private String getModeCommand() {
-        if (mode.equals(Mode.Auto)) return "Auto";
-        if (mode.equals(Mode.Dry)) return "Dry";
-        if (mode.equals(Mode.Cool)) return "Cool";
-        if (mode.equals(Mode.Heat)) return "Heat";
-        if (mode.equals(Mode.Fan)) return "Fan";
-        if (mode.equals(Mode.OnlyFun)) return "OnlyFun";
-        if (mode.equals(Mode.Night)) return "Night";
-        if (mode.equals(Mode.None)) return "None";
-
-        throw new IllegalArgumentException("Invalid or unsupported mode: " + mode);
+        return mode.getModeCommandForWired();
     }
 
     private String getFanCommand() {
-        if (fan.equals(Fan.Auto)) return "FAuto";
-        if (fan.equals(Fan.F1)) return "Fun1";
-        if (fan.equals(Fan.F2)) return "Fun2";
-        if (fan.equals(Fan.F3)) return "Fun3";
-        if (fan.equals(Fan.F4)) return "Fun4";
-        if (fan.equals(Fan.F5)) return "Fun5";
-        if (fan.equals(Fan.None)) return "None";
-
-        throw new IllegalArgumentException("Invalid or unsupported fan: " + fan);
+        return fan.getWiredCommand();
     }
 
     private String getFanDirectionCommand() {
         if (fanDirection.equals(FanDirection.Off)) return "Off";
-        if (fanDirection.equals(FanDirection.None)) return "None";
         if (fanDirection.equals(FanDirection.Vertical)) return "Ud";
 
         throw new IllegalArgumentException("Invalid or unsupported fan direction: " + fanDirection);
     }
 
-    private Mode parseMode(String value) {
-        if (value.equals("AUTO")) return Mode.Auto;
-        if (value.equals("DRY")) return Mode.Dry;
-        if (value.equals("COOL")) return Mode.Cool;
-        if (value.equals("HEAT")) return Mode.Heat;
-        if (value.equals("ONLYFUN")) return Mode.OnlyFun;
-        if (value.equals("NIGHT")) return Mode.Night;
-
-        return Mode.None;
-    }
-
     private Fan parseFan(String value) {
-        if (value.equals("FA")) return Fan.Auto;
-        if (value.equals("F1")) return Fan.F1;
-        if (value.equals("F2")) return Fan.F2;
-        if (value.equals("F3")) return Fan.F3;
-        if (value.equals("F4")) return Fan.F4;
-        if (value.equals("F5")) return Fan.F5;
-
-        return Fan.None;
-    }
-
-    private FanDirection parseFanDirection(String value) {
-        if (value.equals("UD")) return FanDirection.Vertical;
-        if (value.equals("OFF")) return FanDirection.Off;
-
-        return FanDirection.None;
+        return Fan.valueOfWiredCommand(value);
     }
 
     private Timer parseTimer(String value) {

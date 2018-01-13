@@ -16,7 +16,7 @@ public class WirelessDaikin extends DaikinBase {
     private static final String GET_CONTROL_INFO = "/aircon/get_control_info";
     private static final String SET_CONTROL_INFO = "/aircon/set_control_info";
     private static final String GET_SENSOR_INFO = "/aircon/get_sensor_info";
-
+    
     public WirelessDaikin(String host, int port) {
         super(host, port);
     }
@@ -44,8 +44,8 @@ public class WirelessDaikin extends DaikinBase {
         parameters.put("f_rate", getFanCommand());
 
         command.append("&f_dir=");
-        command.append(getFanDirectionCommand());
-        parameters.put("f_dir", getFanDirectionCommand());
+        command.append(fanDirection.getWirelessCommand());
+        parameters.put("f_dir", fanDirection.getWirelessCommand());
 
         command.append("&shum=");
         command.append(getTargetHumidity());
@@ -55,133 +55,155 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     @Override
-    public void readDaikinState(boolean verboseOutput, boolean restAssuranceOnly) {
+    public void readDaikinState(boolean verboseOutput) {
         // this returns a CSV line of properties and their values, which we 
         // then parse and store as properties on this Daikin instance
-        List<String> strings = RestConnector.submitGet(this, GET_CONTROL_INFO, verboseOutput);
-        if (strings == null || strings.isEmpty()) return;
-        String controlInfo = strings.get(0);
-        System.out.println("Got: " + controlInfo);
-        Map<String, String> properties = createMap(controlInfo);
-
-        for (Entry<String, String> property : properties.entrySet()) {
-            String key = property.getKey();
-            String value = property.getValue();
-
-            switch (key) {
-                case "ret":
-                    if (!"ok".equalsIgnoreCase(value))
-                        throw new IllegalStateException("Invalid response, ret=" + value);
-                    break;
-                case "pow":
-                    on = "1".equals(value);
-                    break;
-                case "mode":
-                    mode = parseMode(value);
-                    break;
-                case "stemp":
-                    targetTemperature = parseInt(value);
-                    break;
-                case "shum":
-                    targetHumidity = parseInt(value);
-                    break;
-                case "f_rate":
-                    fan = parseFan(value);
-                    break;
-                case "f_dir":
-                    fanDirection = parseFanDirection(value);
-                    break;
-
-                case "adv":
-                case "alert":
-                case "b_mode":
-                case "b_shum":
-                case "b_f_rate":
-                case "b_f_dir":
-                case "b_stemp":
-                    // we do not know exactly
-                    break;
-
-                case "dt1":
-                case "dt2":
-                case "dt3":
-                case "dt4":
-                case "dt5":
-                case "dt7":
-                    // we do not know exactly (dest temp?)
-                    break;
-
-                case "dhh":
-                case "dh1":
-                case "dh2":
-                case "dh3":
-                case "dh4":
-                case "dh5":
-                case "dh7":
-                    // dh represents target humidity for each DaikinMode
-                    break;
-
-                case "dfrh":
-                case "dfr1":
-                case "dfr2":
-                case "dfr3":
-                case "dfr4":
-                case "dfr5":
-                case "dfr6":
-                case "dfr7":
-                    // don't know what dfr represents currently,
-                    break;
-
-                case "dfdh":
-                case "dfd1":
-                case "dfd2":
-                case "dfd3":
-                case "dfd4":
-                case "dfd5":
-                case "dfd6":
-                case "dfd7":
-                    // don't know what dfd represents currently,
-                    break;
-
-                default:
-                    if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
-            }
+        List<String> strings = readFromAdapter(verboseOutput, GET_CONTROL_INFO);
+        if (strings == null || strings.isEmpty()) {
+            if (verboseOutput) System.err.println("Could not read anything from adapter");
+            return;
         }
+        String controlInfo = strings.get(0);
+        if (verboseOutput) System.out.println("Got for (" + GET_CONTROL_INFO + "): " + controlInfo);
+		parseControlInfoResponse(verboseOutput, controlInfo);
 
         // we also read in the sensor values that we care about
-        String sensorInfo = RestConnector.submitGet(this, GET_SENSOR_INFO, verboseOutput).get(0);
-        properties = createMap(sensorInfo);
-
-        for (Entry<String, String> property : properties.entrySet()) {
-            String key = property.getKey();
-            String value = property.getValue();
-            //ret=OK,htemp=26.0,hhum=-,otemp=2.5,err=0,cmpfreq=26
-            switch (key) {
-                case "ret":
-                    if (!"ok".equalsIgnoreCase(value))
-                        throw new IllegalStateException("Invalid response, ret=" + value);
-                    break;
-
-                case "hhum":
-                    if (!"-".equals(value)) setTargetHumidity(parseInt(value));
-                    break;
-                case "htemp":
-                    insideTemperature = parseDouble(value);
-                    break;
-                case "otemp":
-                    outsideTemperature = parseDouble(value);
-                    break;
-
-                case "err":
-                    break;
-                case "cmpfreq":
-                    break;
-                default:
-                    if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
-            }
-        }
+		strings = readFromAdapter(verboseOutput, GET_SENSOR_INFO);
+		if (strings == null || strings.isEmpty()) {
+			if (verboseOutput) System.err.println("Could not read anything from adapter");
+			return;
+		}
+		String sensorInfo = strings.get(0);
+		if (verboseOutput) System.out.println("Got for (" + GET_SENSOR_INFO + "): " + sensorInfo);
+		parseSensorResponse(verboseOutput, sensorInfo);
     }
+	
+	private void parseSensorResponse(boolean verboseOutput, String sensorInfo) {
+		Map<String, String> properties;
+		properties = createMap(sensorInfo);
+		
+		for (Entry<String, String> property : properties.entrySet()) {
+			String key = property.getKey();
+			String value = property.getValue();
+			//ret=OK,htemp=26.0,hhum=-,otemp=2.5,err=0,cmpfreq=26
+			switch (key) {
+				case "ret":
+					if (!"ok".equalsIgnoreCase(value))
+						throw new IllegalStateException("Invalid response, ret=" + value);
+					break;
 
+				case "hhum":
+					if (!"-".equals(value)) setTargetHumidity(parseInt(value));
+					break;
+				case "htemp":
+					insideTemperature = parseDouble(value);
+					break;
+				case "otemp":
+					outsideTemperature = parseDouble(value);
+					break;
+
+				case "err":
+					break;
+				case "cmpfreq":
+					break;
+				default:
+					if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
+			}
+		}
+	}
+	
+	private void parseControlInfoResponse(boolean verboseOutput, String controlInfo) {
+		Map<String, String> properties = createMap(controlInfo);
+		
+		for (Entry<String, String> property : properties.entrySet()) {
+			String key = property.getKey();
+			String value = property.getValue();
+
+			switch (key) {
+				case "ret":
+					if (!"ok".equalsIgnoreCase(value))
+						throw new IllegalStateException("Invalid response, ret=" + value);
+					break;
+				case "pow":
+					on = "1".equals(value);
+					break;
+				case "mode":
+					mode = Mode.valueOfWireless(value);
+					break;
+				case "stemp":
+					targetTemperature = parseDouble(value);
+					break;
+				case "shum":
+					targetHumidity = parseInt(value);
+					break;
+				case "f_rate":
+					fan = Fan.valueOfWirelessCommand(value);
+					break;
+				case "f_dir":
+					fanDirection = FanDirection.valueOfWirelessCommand(value);
+					break;
+
+				case "adv":
+				case "alert":
+				case "b_mode":
+				case "b_shum":
+				case "b_f_rate":
+				case "b_f_dir":
+				case "b_stemp":
+					// we do not know exactly
+					break;
+
+				case "dt1":
+				case "dt2":
+				case "dt3":
+				case "dt4":
+				case "dt5":
+				case "dt7":
+					// we do not know exactly (dest temp?)
+					break;
+
+				case "dhh":
+				case "dh1":
+				case "dh2":
+				case "dh3":
+				case "dh4":
+				case "dh5":
+				case "dh7":
+					// dh represents target humidity for each DaikinMode
+					break;
+
+				case "dfrh":
+				case "dfr1":
+				case "dfr2":
+				case "dfr3":
+				case "dfr4":
+				case "dfr5":
+				case "dfr6":
+				case "dfr7":
+					// don't know what dfr represents currently,
+					break;
+
+				case "dfdh":
+				case "dfd1":
+				case "dfd2":
+				case "dfd3":
+				case "dfd4":
+				case "dfd5":
+				case "dfd6":
+				case "dfd7":
+					// don't know what dfd represents currently,
+					break;
+
+				default:
+					if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
+			}
+		}
+	}
+	
+	List<String> readFromAdapter(boolean verboseOutput, String pathToApi) {
+        return RestConnector.submitGet(this, pathToApi, verboseOutput);
+    }
+    
     private Map<String, String> createMap(String controlInfo) {
         Map<String, String> properties = new HashMap<>();
         String[] splitString = controlInfo.split(",");
@@ -195,68 +217,11 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     private String getModeCommand() {
-        if (mode.equals(Mode.Auto)) return "0";
-        if (mode.equals(Mode.Dry)) return "2";
-        if (mode.equals(Mode.Cool)) return "3";
-        if (mode.equals(Mode.Heat)) return "4";
-        if (mode.equals(Mode.Fan)) return "6";
-        if (mode.equals(Mode.None)) return "0";
-
-        throw new IllegalArgumentException("Invalid or unsupported mode: " + mode);
+        return mode.getModeCommandForWireless();
     }
 
     private String getFanCommand() {
-        if (fan.equals(Fan.Auto)) return "A";
-        if (fan.equals(Fan.F1)) return "3";
-        if (fan.equals(Fan.F2)) return "4";
-        if (fan.equals(Fan.F3)) return "5";
-        if (fan.equals(Fan.F4)) return "6";
-        if (fan.equals(Fan.F5)) return "7";
-        if (fan.equals(Fan.None)) return "B";
-
-        throw new IllegalArgumentException("Invalid or unsupported fan: " + fan);
-    }
-
-    private String getFanDirectionCommand() {
-        if (fanDirection.equals(FanDirection.Off)) return "0";
-        if (fanDirection.equals(FanDirection.None)) return "0";
-        if (fanDirection.equals(FanDirection.Vertical)) return "1";
-        if (fanDirection.equals(FanDirection.Horizontal)) return "2";
-        if (fanDirection.equals(FanDirection.VerticalAndHorizontal)) return "3";
-
-        throw new IllegalArgumentException("Invalid or unsupported fan direction: " + fanDirection);
-    }
-
-    public static Mode parseMode(String value) {
-        if (value.equals("0") || value.equals("1") || value.equals("7")) return Mode.Auto;
-        if (value.equals("2")) return Mode.Dry;
-        if (value.equals("3")) return Mode.Cool;
-        if (value.equals("4")) return Mode.Heat;
-        if (value.equals("6")) return Mode.Fan;
-
-        return Mode.Auto;
-    }
-
-    public static Fan parseFan(String value) {
-        if (value.equalsIgnoreCase("A")) return Fan.Auto;
-        if (value.equals("1")) return Fan.F1;
-        if (value.equals("2")) return Fan.F1;
-        if (value.equals("3")) return Fan.F1;
-        if (value.equals("4")) return Fan.F2;
-        if (value.equals("5")) return Fan.F3;
-        if (value.equals("6")) return Fan.F4;
-        if (value.equals("7")) return Fan.F5;
-
-        return Fan.None;
-    }
-
-    public static FanDirection parseFanDirection(String value) {
-        if (value.equals("0")) return FanDirection.None;
-        if (value.equals("1")) return FanDirection.Vertical;
-        if (value.equals("2")) return FanDirection.Horizontal;
-        if (value.equals("3")) return FanDirection.VerticalAndHorizontal;
-
-        return FanDirection.Off;
+    	return fan.getWirelessCommand();
     }
 
     public static double parseDouble(String value) {

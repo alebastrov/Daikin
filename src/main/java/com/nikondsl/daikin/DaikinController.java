@@ -5,9 +5,11 @@ import com.beust.jcommander.Strings;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
+import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
 
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,19 +28,20 @@ public class DaikinController {
 
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
-
-    public static void main(String[] args) throws InterruptedException {
+	public static final String COMMON_BASIC_INFO = "/common/basic_info";
+	
+	public static void main(String[] args) throws InterruptedException {
         if (args.length == 0) {
             System.err.println("Possible commands:");
             System.err.println("-scan (192.168.1), possible values: (any subnet to scan ip addresses from 1 tp 255) ");
             System.err.println("-protocol (http), possible values: (http|https)");
-            System.err.println("-host (192.168.1.165)");
+            System.err.println("-host (), possible value: (any ipv4 address)");
             System.err.println("-port (80)");
             System.err.println("-power (on), possible values: (on|off)");
             System.err.println("-mode (auto), possible values: (auto|dry|cool|heat|fan)");
             System.err.println("-temp (22), possible values: any integer >= 10 and <= 32");
             System.err.println("-humid (3)");
-            System.err.println("-fan (1), possible values: (a|1|2|3|4|5)");
+            System.err.println("-fan (auto), possible values: (silent|auto|1|2|3|4|5)");
             System.err.println("-direction (), possible values: (|h|v|hv|vh)");
             System.err.println("-verbose (), possible values: (|any)");
             System.err.println("-port (80)");
@@ -45,26 +49,14 @@ public class DaikinController {
             System.err.println("-check.every (), possible values: (1-3600 seconds)");
             return;
         }
-
+		final DaikinController controller = new DaikinController();
         for (String arg : args) {
             if ("-scan".equals(arg)) {
                 ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
                 for (int i = 1; i <= 255; i++) {
                     final int ip = i;
                     lookUpService.submit(() -> {
-                        com.nikondsl.daikin.DaikinBase daikin = getDaikin(args[1], ip, DEFAULT_PORT);
-                        java.util.List<String> rows = com.nikondsl.daikin.util.RestConnector.submitGet(daikin, "/common/basic_info", false);
-                        if (rows == null) {
-                            System.err.println("Scanned " + daikin.getHost() + ", not found");
-                            return;
-                        }
-                        String responseFromAirCon = rows.get(0);
-                        if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) {
-                            System.err.println("Scanned " + daikin.getHost() + ", found something");
-                            return;
-                        }
-                        String name = java.net.URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
-                        System.err.println("Found Daikin [" + name + "] at " + daikin.getHost());
+                        controller.checkApiExist(getDaikin(args.length>1?args[1]:"", ip, DEFAULT_PORT));
                     });
                 }
                 lookUpService.shutdown();
@@ -76,7 +68,8 @@ public class DaikinController {
         CommandParser cParser = new CommandParser();
         new JCommander(cParser, args);
         DaikinBase daikin = DaikinFactory.createWirelessDaikin(String.format("%1s://%2s", cParser.getProtocol(), cParser.getHost()), Integer.parseInt(cParser.getPort()));
-
+		
+		final String nameOfUnit = controller.checkApiExist(daikin);
         if (cParser.getCheckEvery() != null && cParser.getCheckEvery().length() > 0) {
             String secondsToSleep = cParser.getCheckEvery().replaceAll("\\D", "");
             if (secondsToSleep.length() > 0) {
@@ -84,10 +77,10 @@ public class DaikinController {
                     int seconds = Integer.parseInt(secondsToSleep);
                     if (seconds > TimeUnit.MINUTES.toMillis(5) || seconds == 0) seconds = 60;
                     try {
-                        daikin.readDaikinState(cParser.isVerboseOutput(), true);
+                        daikin.readDaikinState(cParser.isVerboseOutput());
 
                         if (cParser.getWriteToFile() != null && cParser.getWriteToFile().length() > 0) {
-                            tryWriteToFile(cParser.getWriteToFile(), daikin);
+                            tryWriteToFile(cParser.getWriteToFile(), daikin, nameOfUnit);
                         }
 
                         sleep(seconds);
@@ -98,30 +91,48 @@ public class DaikinController {
                 }
             }
         }
-
-
-        daikin.readDaikinState(cParser.isVerboseOutput(), true);
-        System.err.println("State before: " + daikin);
+		
+        daikin.readDaikinState(cParser.isVerboseOutput());
+        System.err.println("State before for [" + nameOfUnit + "]: " + daikin);
 
         daikin.setOn("on".equalsIgnoreCase(cParser.getPower()));
-        Mode targetMode = WirelessDaikin.parseMode(cParser.getMode());
-        if (targetMode != Mode.None) daikin.setMode(targetMode);
-        Fan targetFan = WirelessDaikin.parseFan(cParser.getFan());
-        if (targetFan != Fan.None) daikin.setFan(targetFan);
-        FanDirection targetFanDirection = WirelessDaikin.parseFanDirection(cParser.getFanDirection());
-        if (targetFanDirection != FanDirection.None) daikin.setFanDirection(targetFanDirection);
+        Mode targetMode = cParser.parseModeConsoleCommand();
+        daikin.setMode(targetMode);
+        Fan targetFan = cParser.parseFanConsoleCommand();
+        daikin.setFan(targetFan);
+        FanDirection targetFanDirection = cParser.parseFanDirectionConsoleCommand();
+        daikin.setFanDirection(targetFanDirection);
         int targetTemperature = WirelessDaikin.parseInt(cParser.getTargetTemperature());
         if (targetTemperature >= 10 && targetTemperature <= 32) daikin.setTargetTemperature(targetTemperature);
         int targetHumidity = WirelessDaikin.parseInt(cParser.getTargetHumudity());
         if (targetHumidity > 0 && targetHumidity < 100) daikin.setTargetHumidity(targetHumidity);
         daikin.updateDaikinState(cParser.isVerboseOutput());
 
-        daikin.readDaikinState(cParser.isVerboseOutput(), true);
-
-        System.err.println("State after: " + daikin);
+        daikin.readDaikinState(cParser.isVerboseOutput());
+        System.err.println("State after for [" + nameOfUnit + "]: " + daikin);
     }
 
-    private static DaikinBase getDaikin(String subNet, final int ip, int port) {
+	String checkApiExist(DaikinBase daikin) {
+        List<String> rows = readIdentificationResponse(daikin);
+        if (rows == null) {
+            System.err.println("Scanned " + daikin.getHost() + ", not found");
+            return null;
+        }
+        String responseFromAirCon = rows.get(0);
+        if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) {
+            System.err.println("Scanned " + daikin.getHost() + ", found something");
+            return null;
+        }
+        String name = URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
+        System.err.println("Found Daikin [" + name + "] at " + daikin.getHost());
+        return name;
+    }
+	
+	List<String> readIdentificationResponse(DaikinBase daikin) {
+		return RestConnector.submitGet(daikin, COMMON_BASIC_INFO, false);
+	}
+	
+	private static DaikinBase getDaikin(String subNet, final int ip, int port) {
         if (Strings.isStringEmpty(subNet)) subNet = "192.168.1.";
         else subNet = subNet.replaceAll("((1?[0-9]{1,2}|2[0-4][0-9]|25[0-5]\\.){3})", "$1");
         if (!subNet.endsWith(".")) subNet += ".";
@@ -132,7 +143,7 @@ public class DaikinController {
             }
 
             @Override
-            public void readDaikinState(boolean verboseOutput, boolean restAssuranceOnly) {
+            public void readDaikinState(boolean verboseOutput) {
             }
         };
     }
@@ -146,7 +157,7 @@ public class DaikinController {
         }
     }
 
-    private static void tryWriteToFile(String writeToFile, DaikinBase daikin) throws IOException {
+    private static void tryWriteToFile(String writeToFile, DaikinBase daikin, String nameOfUnit) throws IOException {
         Path filePath = Paths.get(writeToFile);
         if (!Files.exists(filePath)) {
             filePath = Files.createFile(filePath);
@@ -167,8 +178,8 @@ public class DaikinController {
                 toFormatter();
         LocalDateTime dateTime = LocalDateTime.now();
 
-        String s = dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
-        System.out.println(s);
-        Files.write(filePath, s.getBytes("UTF-8"), StandardOpenOption.APPEND);
+        String result = nameOfUnit + ", " + dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
+        System.out.println(result);
+        Files.write(filePath, result.getBytes("UTF-8"), StandardOpenOption.APPEND);
     }
 }
