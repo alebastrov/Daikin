@@ -8,6 +8,7 @@ import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
 
+import javax.sql.rowset.serial.SerialRef;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -19,10 +20,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class DaikinController {
@@ -53,15 +58,30 @@ public class DaikinController {
 		final DaikinController controller = new DaikinController();
         for (String arg : args) {
             if ("-scan".equals(arg)) {
+                final Set<String[]> foundUnits = new ConcurrentSkipListSet<>(new Comparator<String[]>() {
+                    @Override
+                    public int compare(String[] o1, String[] o2) {
+                        return (o1[0] + o1[1]).compareTo(o2[0] + o2[1]);
+                    }
+                });
                 ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
                 for (int i = 1; i <= 255; i++) {
                     final int ip = i;
                     lookUpService.submit(() -> {
-                        controller.checkApiExist(getDaikin(args.length>1?args[1]:"", ip, DEFAULT_PORT));
+                        String[] nameAndAddressOfUnit = controller.checkApiExist(getDaikin(args.length>1?args[1]:"", ip, DEFAULT_PORT));
+                        if (nameAndAddressOfUnit != null) foundUnits.add(nameAndAddressOfUnit);
                     });
                 }
                 lookUpService.shutdown();
                 lookUpService.awaitTermination(2, TimeUnit.MINUTES);
+
+                foundUnits.add(new String[] {"sleeping room", "127.0.0.1"});
+                foundUnits.add(new String[] {"kitchen", "127.0.0.18"});
+
+                System.err.println("Scanning finished, found " + foundUnits.size() + " units.");
+                foundUnits.forEach((String[] nameAndAddressOfUnit) -> {
+                    System.err.println("[" + nameAndAddressOfUnit[0] + "] on " + nameAndAddressOfUnit[1]);
+                });
                 return;
             }
         }
@@ -73,7 +93,7 @@ public class DaikinController {
                 .parse(args);
         DaikinBase daikin = DaikinFactory.createWirelessDaikin(String.format("%1s://%2s", cParser.getProtocol(), cParser.getHost()), Integer.parseInt(cParser.getPort()));
 		
-		final String nameOfUnit = controller.checkApiExist(daikin);
+		final String[] nameAndAddressOfUnit = controller.checkApiExist(daikin);
         if (cParser.getCheckEvery() != null && cParser.getCheckEvery().length() > 0) {
             String secondsToSleep = cParser.getCheckEvery().replaceAll("\\D", "");
             if (secondsToSleep.length() > 0) {
@@ -84,7 +104,7 @@ public class DaikinController {
                         daikin.readDaikinState(cParser.isVerboseOutput());
 
                         if (cParser.getWriteToFile() != null && cParser.getWriteToFile().length() > 0) {
-                            tryWriteToFile(cParser.getWriteToFile(), daikin, nameOfUnit);
+                            tryWriteToFile(cParser.getWriteToFile(), daikin, nameAndAddressOfUnit);
                         }
 
                         sleep(seconds);
@@ -97,7 +117,7 @@ public class DaikinController {
         }
 		
         daikin.readDaikinState(cParser.isVerboseOutput());
-        System.err.println("State before for [" + nameOfUnit + "]: " + daikin);
+        System.err.println("State before for [" + nameAndAddressOfUnit + "]: " + daikin);
 
         daikin.setOn("on".equalsIgnoreCase(cParser.getPower()));
         Mode targetMode = cParser.parseModeConsoleCommand();
@@ -113,10 +133,10 @@ public class DaikinController {
         daikin.updateDaikinState(cParser.isVerboseOutput());
 
         daikin.readDaikinState(cParser.isVerboseOutput());
-        System.err.println("State after for [" + nameOfUnit + "]: " + daikin);
+        System.err.println("State after for [" + nameAndAddressOfUnit + "]: " + daikin);
     }
 
-	String checkApiExist(DaikinBase daikin) {
+	String[] checkApiExist(DaikinBase daikin) {
         List<String> rows = readIdentificationResponse(daikin);
         if (rows == null) {
             System.err.println("Scanned " + daikin.getHost() + ", not found");
@@ -137,7 +157,7 @@ public class DaikinController {
             return null;
         }
         System.err.println("Found Daikin AC [" + name + "] at " + daikin.getHost());
-        return name;
+        return new String[]{name, daikin.getHost()};
     }
 	
 	List<String> readIdentificationResponse(DaikinBase daikin) {
@@ -169,7 +189,7 @@ public class DaikinController {
         }
     }
 
-    private static void tryWriteToFile(String writeToFile, DaikinBase daikin, String nameOfUnit) throws IOException {
+    private static void tryWriteToFile(String writeToFile, DaikinBase daikin, String[] nameAndAddressOfUnit) throws IOException {
         Path filePath = Paths.get(writeToFile);
         if (!Files.exists(filePath)) {
             filePath = Files.createFile(filePath);
@@ -190,7 +210,7 @@ public class DaikinController {
                 toFormatter();
         LocalDateTime dateTime = LocalDateTime.now();
 
-        String result = nameOfUnit + ", " + dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
+        String result = nameAndAddressOfUnit[0] + " (" + nameAndAddressOfUnit[1] + "), " + dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
         System.out.println(result);
         Files.write(filePath, result.getBytes("UTF-8"), StandardOpenOption.APPEND);
     }

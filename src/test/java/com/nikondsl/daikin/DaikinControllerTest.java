@@ -25,10 +25,13 @@ public class DaikinControllerTest {
 	
 	@Test
 	public void testScanResponseParse() {
-		when(daikinBase.getHost()).thenReturn("127.0.0.1");
+		when(daikinBase.getHost()).thenReturn("127.0.0.133");
 		doReturn(Collections.singletonList(scanResponse)).when(daikinController).readIdentificationResponse(daikinBase);
-		
-		assertEquals("гостиная", daikinController.checkApiExist(daikinBase));
+
+        String[] nameAndAddressOfUnit = daikinController.checkApiExist(daikinBase);
+
+        assertEquals("гостиная", nameAndAddressOfUnit[0]);
+        assertEquals("127.0.0.133", nameAndAddressOfUnit[1]);
 	}
 	
 }
