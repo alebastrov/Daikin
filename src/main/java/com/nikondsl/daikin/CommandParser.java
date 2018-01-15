@@ -17,38 +17,38 @@ import static com.nikondsl.daikin.enums.Fan.Silent;
 
 @Parameters(separators = "=")
 public class CommandParser {
-    @Parameter(names = "-protocol")
+    @Parameter(names = "-protocol", description = "http/https protocol to use REST API")
     @Getter
     @Setter
     private String protocol = "http";
 
-    @Parameter(names = "-host")
+    @Parameter(names = "-host", description = "Host IPv4 address")
     @Getter
     private String host = "192.168.1.165";
 
-    @Parameter(names = "-port")
+    @Parameter(names = "-port", description = "http port to use REST API")
     @Getter
     private String port = "80";
 
-    @Parameter(names = "-power")
+    @Parameter(names = "-power", description = "Switch power on/off")
     @Getter
     private String power = "on";
 
-    @Parameter(names = "-mode")
+    @Parameter(names = "-mode", description = "AC unit mode: auto, cool, heat, etc.")
     private String mode = "";
 
-    @Parameter(names = "-temp")
+    @Parameter(names = "-temp", description = "Target temperature in celsius")
     @Getter
     private String targetTemperature = "";
 
-    @Parameter(names = "-humid")
+    @Parameter(names = "-humid", description = "Target humidity level")
     @Getter
     private String targetHumudity = "";
 
-    @Parameter(names = "-fan")
+    @Parameter(names = "-fan", description = "Fan speed")
     private String fan = "silent";
 
-    @Parameter(names = "-direction")
+    @Parameter(names = "-direction", description = "Wings direction")
     private String fanDirection = "";
 
     @Parameter(names = "-timeoutConnection.connection")

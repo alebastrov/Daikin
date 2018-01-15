@@ -67,7 +67,10 @@ public class DaikinController {
         }
 
         CommandParser cParser = new CommandParser();
-        new JCommander(cParser, args);
+        JCommander.newBuilder()
+                .addObject(cParser)
+                .build()
+                .parse(args);
         DaikinBase daikin = DaikinFactory.createWirelessDaikin(String.format("%1s://%2s", cParser.getProtocol(), cParser.getHost()), Integer.parseInt(cParser.getPort()));
 		
 		final String nameOfUnit = controller.checkApiExist(daikin);
