@@ -8,7 +8,6 @@ import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
 
-import javax.sql.rowset.serial.SerialRef;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -27,7 +26,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class DaikinController {
@@ -74,9 +72,6 @@ public class DaikinController {
                 }
                 lookUpService.shutdown();
                 lookUpService.awaitTermination(2, TimeUnit.MINUTES);
-
-                foundUnits.add(new String[] {"sleeping room", "127.0.0.1"});
-                foundUnits.add(new String[] {"kitchen", "127.0.0.18"});
 
                 System.err.println("Scanning finished, found " + foundUnits.size() + " units.");
                 foundUnits.forEach((String[] nameAndAddressOfUnit) -> {
