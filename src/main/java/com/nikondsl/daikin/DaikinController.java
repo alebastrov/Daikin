@@ -9,6 +9,7 @@ import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -123,8 +124,16 @@ public class DaikinController {
             System.err.println("Scanned " + daikin.getHost() + ", found something");
             return null;
         }
-        String name = URLDecoder.decode(responseFromAirCon).replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
-        System.err.println("Found Daikin [" + name + "] at " + daikin.getHost());
+        String nameOfUnit = "";
+        String name = null;
+        try {
+            nameOfUnit = responseFromAirCon.replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
+            name = URLDecoder.decode(nameOfUnit, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            System.err.println("Scanned " + daikin.getHost() + ", found something like Daikin AC, but could not decode " + nameOfUnit);
+            return null;
+        }
+        System.err.println("Found Daikin AC [" + name + "] at " + daikin.getHost());
         return name;
     }
 	
