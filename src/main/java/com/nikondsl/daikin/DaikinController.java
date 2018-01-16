@@ -29,6 +29,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_GREEN;
+import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RED;
+import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RESET;
+
 
 public class DaikinController {
     private static final Logger LOG = LogManager.getLogger(DaikinController.class);
@@ -64,7 +68,7 @@ public class DaikinController {
             }
             daikin.readDaikinState(cParser.isVerboseOutput());
             setParametersForUnit(cParser, daikin);
-            LOG.debug("State before for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
+            if (cParser.isVerboseOutput()) LOG.debug("State before for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
             daikin.updateDaikinState(cParser.isVerboseOutput());
             daikin.readDaikinState(cParser.isVerboseOutput());
             LOG.info("State after for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
@@ -74,21 +78,37 @@ public class DaikinController {
     }
 
     private static void printUsage() {
-        System.err.println("Possible commands:");
-        System.err.println("-scan (192.168.1), possible values: (any subnet to scan ip addresses from 1 tp 255) ");
-        System.err.println("-protocol (http), possible values: (http|https)");
-        System.err.println("-host (), possible value: (any ipv4 address)");
-        System.err.println("-port (80)");
-        System.err.println("-power (on), possible values: (on|off)");
-        System.err.println("-mode (auto), possible values: (auto|dry|cool|heat|fan)");
-        System.err.println("-temp (22), possible values: any integer >= 10 and <= 32");
-        System.err.println("-humid (3)");
-        System.err.println("-fan (auto), possible values: (silent|auto|1|2|3|4|5)");
-        System.err.println("-direction (), possible values: (|h|v|hv|vh)");
-        System.err.println("-verbose (), possible values: (|any)");
-        System.err.println("-port (80)");
-        System.err.println("-file (), possible values: (any path)");
-        System.err.println("-check.every (), possible values: (1-3600 seconds)");
+        System.err.println(ANSI_RED + "Possible commands:" + ANSI_RESET);
+        System.err.println(getGreenString("-scan") +
+                " (192.168.1), possible values: (any subnet to scan ip addresses from 1 tp 255) ");
+        System.err.println(getGreenString("-protocol") +
+                " (http), possible values: (http|https)");
+        System.err.println(getGreenString("-host") +
+                " (), possible value: (any ipv4 address)");
+        System.err.println(getGreenString("-port") +
+                " (80), possible values: any port number");
+        System.err.println(getGreenString("-power") +
+                " (on), possible values: (on|off)");
+        System.err.println(getGreenString("-mode") +
+                " (auto), possible values: (auto|dry|cool|heat|fan)");
+        System.err.println(getGreenString("-temp") +
+                " (22), possible values: any integer >= 10 and <= 32");
+        System.err.println(getGreenString("-humid") +
+                " (3), possible values: (1-99)");
+        System.err.println(getGreenString("-fan") +
+                " (auto), possible values: (silent|auto|1|2|3|4|5)");
+        System.err.println(getGreenString("-direction") +
+                " (), possible values: (|h|v|hv|vh)");
+        System.err.println(getGreenString("-verbose") +
+                " (), possible values: (|any)");
+        System.err.println(getGreenString("-file") +
+                " (), possible values: (any path)");
+        System.err.println(getGreenString("-check.every") +
+                " (), possible values: (1-3600 seconds)");
+    }
+
+    private static String getGreenString(String text) {
+        return ANSI_GREEN + text + ANSI_RESET;
     }
 
     private static void scanSubNet(String[] args, DaikinController controller) throws InterruptedException {
