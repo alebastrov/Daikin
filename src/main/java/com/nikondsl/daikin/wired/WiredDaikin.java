@@ -7,6 +7,7 @@ import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.enums.Timer;
 import com.nikondsl.daikin.util.RestConnector;
 
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,7 +39,7 @@ public class WiredDaikin extends DaikinBase {
     }
 
     @Override
-    public void updateDaikinState(boolean isVerboseOutput) {
+    public void updateDaikinState(boolean isVerboseOutput) throws IOException {
         // posts the state of this object to the Daikin unit, updating it
         Map<String, String> parameters = new HashMap<>();
         StringBuilder sb = new StringBuilder();
@@ -71,12 +72,12 @@ public class WiredDaikin extends DaikinBase {
     }
 
     @Override
-    public void readDaikinState(boolean verboseOutput) {
+    public void readDaikinState(boolean verboseOutput) throws IOException {
         // returns a line delimited list of values, with a '.' after each value
         List<String> properties = parseProperties(RestConnector.submitGet(this, GET_STATE, verboseOutput));
 
         // check the response was OK
-        if (!properties.get(0).equals("OK"))
+        if (!"OK".equals(properties.get(0)))
             throw new RuntimeException("Bad connection state received: " + properties.get(0));
 
         // parse the state values from the response and update our host

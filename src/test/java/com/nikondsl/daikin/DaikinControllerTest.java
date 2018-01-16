@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -24,7 +25,7 @@ public class DaikinControllerTest {
 	private DaikinController daikinController = spy(new DaikinController());
 	
 	@Test
-	public void testScanResponseParse() {
+	public void testScanResponseParse() throws IOException {
 		when(daikinBase.getHost()).thenReturn("127.0.0.133");
 		doReturn(Collections.singletonList(scanResponse)).when(daikinController).readIdentificationResponse(daikinBase);
 

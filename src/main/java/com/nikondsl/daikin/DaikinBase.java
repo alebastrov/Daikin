@@ -8,6 +8,8 @@ import com.nikondsl.daikin.wireless.WirelessDaikin;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.IOException;
+
 public abstract class DaikinBase {
 
     @Getter
@@ -87,7 +89,7 @@ public abstract class DaikinBase {
         return result.toString();
     }
 
-    public abstract void updateDaikinState(boolean isVerboseOutput);
+    public abstract void updateDaikinState(boolean isVerboseOutput) throws IOException;
 
-    public abstract void readDaikinState(boolean verboseOutput);
+    public abstract void readDaikinState(boolean verboseOutput) throws IOException;
 }

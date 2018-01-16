@@ -5,6 +5,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
@@ -18,7 +19,7 @@ public class WirelessDaikinTest {
 	private WirelessDaikin wirelessDaikin = new WirelessDaikin("ip.address", 80);
 	
 	@Test
-	public void testParseStatusResponses() {
+	public void testParseStatusResponses() throws IOException {
 		doReturn(Collections.singletonList(controlResponse)).when(wirelessDaikin).readFromAdapter(true, "/aircon/get_control_info");
 		doReturn(Collections.singletonList(sensorResponse)).when(wirelessDaikin).readFromAdapter(true, "/aircon/get_sensor_info");
 		
