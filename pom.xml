@@ -16,12 +16,12 @@
             <version>23.6-jre</version>
         </dependency>
 
-        <!--<dependency>-->
-            <!--<groupId>org.objenesis</groupId>-->
-            <!--<artifactId>objenesis</artifactId>-->
-            <!--<version>2.6</version>-->
-            <!--<scope>test</scope>-->
-        <!--</dependency>-->
+        <dependency>
+            <groupId>org.objenesis</groupId>
+            <artifactId>objenesis</artifactId>
+            <version>2.6</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -87,6 +87,11 @@
             <artifactId>log4j-core</artifactId>
             <version>2.10.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.10.0</version>
+        </dependency>
     </dependencies>
 
     <repositories>
@@ -111,7 +116,7 @@
                         <configuration>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>org.sonatype.haven.HavenCli</mainClass>
+                                    <mainClass>com.nikondsl.daikin.DaikinController</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
