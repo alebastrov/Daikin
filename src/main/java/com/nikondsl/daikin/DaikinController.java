@@ -186,7 +186,7 @@ public class DaikinController {
 
     String[] checkApiExist(DaikinBase daikin) throws IOException {
         List<String> rows = readIdentificationResponse(daikin);
-        if (rows == null) {
+        if (rows == null || rows.size()==1 && "".equals(rows.get(0))) {
             LOG.debug("Scanned " + daikin.getHost() + ", not found");
             return null;
         }

@@ -65,21 +65,21 @@ public class WirelessDaikin extends DaikinBase {
         // then parse and store as properties on this Daikin instance
         List<String> strings = readFromAdapter(GET_CONTROL_INFO);
         if (strings == null || strings.isEmpty()) {
-            LOG.warn("Could not read anything from adapter for " + GET_CONTROL_INFO);
+            LOG.warn("Could not read anything from unit " + GET_CONTROL_INFO);
             return;
         }
         String controlInfo = strings.get(0);
-        LOG.debug("Got for (" + GET_CONTROL_INFO + "): " + controlInfo);
+        LOG.debug("Got response for (" + GET_CONTROL_INFO + "): " + controlInfo);
 		parseControlInfoResponse(controlInfo);
 
         // we also read in the sensor values that we care about
 		strings = readFromAdapter(GET_SENSOR_INFO);
 		if (strings == null || strings.isEmpty()) {
-			LOG.warn("Could not read anything from adapter for " + GET_SENSOR_INFO);
+			LOG.warn("Could not read anything from unit " + GET_SENSOR_INFO);
 			return;
 		}
 		String sensorInfo = strings.get(0);
-		LOG.debug("Got for (" + GET_SENSOR_INFO + "): " + sensorInfo);
+		LOG.debug("Got response for (" + GET_SENSOR_INFO + "): " + sensorInfo);
 		parseSensorResponse(sensorInfo);
     }
 	

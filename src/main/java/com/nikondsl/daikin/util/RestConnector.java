@@ -39,7 +39,6 @@ public class RestConnector {
         HttpGet httpGet = new HttpGet(daikin.getHost() + ":" + daikin.getPort() + path);
         HttpResponse response = httpClient.execute(httpGet);
         LOG.trace("request=" + httpGet.toString());
-        LOG.trace("response=" + EntityUtils.toString(response.getEntity()));
         return Collections.singletonList(convertStreamToString(response.getEntity().getContent()));
     }
 
@@ -53,7 +52,6 @@ public class RestConnector {
         httpPost.setEntity(new UrlEncodedFormEntity(params));
         HttpResponse response = httpClient.execute(httpPost);
         LOG.trace("request=" + post);
-        LOG.trace("response=" + EntityUtils.toString(response.getEntity()));
         return EntityUtils.toString(response.getEntity());
     }
     
