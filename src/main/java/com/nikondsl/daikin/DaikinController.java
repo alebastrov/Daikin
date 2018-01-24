@@ -7,11 +7,14 @@ import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,21 +38,22 @@ import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RESET;
 
 
 public class DaikinController {
-    private static final Logger LOG = LogManager.getLogger(DaikinController.class);
+    private final Logger LOG = LogManager.getLogger(DaikinController.class);
 
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
 	public static final String COMMON_BASIC_INFO = "/common/basic_info";
 	
 	public static void main(String[] args) throws InterruptedException {
+        final DaikinController controller = new DaikinController();
         if (args.length == 0) {
+            controller.LOG.trace("No args[] provided, printing USAGE.");
             printUsage();
             return;
         }
-		final DaikinController controller = new DaikinController();
         for (String arg : args) {
             if ("-scan".equals(arg)) {
-                scanSubNet(args, controller);
+                controller.scanSubNet(args, controller);
                 return;
             }
         }
@@ -63,17 +67,17 @@ public class DaikinController {
 		try {
             String[] nameAndAddressOfUnit = controller.checkApiExist(daikin);
             if (cParser.getCheckEvery() != null && cParser.getCheckEvery().length() > 0) {
-                writeStateToFile(cParser, daikin, nameAndAddressOfUnit);
+                controller.writeStateToFile(cParser, daikin, nameAndAddressOfUnit);
                 return;
             }
             daikin.readDaikinState(cParser.isVerboseOutput());
             setParametersForUnit(cParser, daikin);
-            if (cParser.isVerboseOutput()) LOG.debug("State before for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
+            if (cParser.isVerboseOutput()) controller.LOG.debug("State before for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
             daikin.updateDaikinState(cParser.isVerboseOutput());
             daikin.readDaikinState(cParser.isVerboseOutput());
-            LOG.info("State after for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
+            controller.LOG.info("State after for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
         } catch (IOException ex) {
-            LOG.error("Could not connect to a Daikin unit: " + daikin, ex);
+            controller.LOG.error("Could not connect to a Daikin unit: " + daikin, ex);
         }
     }
 
@@ -111,22 +115,28 @@ public class DaikinController {
         return ANSI_GREEN + text + ANSI_RESET;
     }
 
-    private static void scanSubNet(String[] args, DaikinController controller) throws InterruptedException {
+    private void scanSubNet(String[] args, DaikinController controller) throws InterruptedException {
         final Set<String[]> foundUnits = new ConcurrentSkipListSet<>(new Comparator<String[]>() {
             @Override
             public int compare(String[] o1, String[] o2) {
                 return (o1[0] + o1[1]).compareTo(o2[0] + o2[1]);
             }
         });
+        LOG.info("Scanning started, please wait about couple minutes ...");
         ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
         for (int i = 1; i <= 255; i++) {
             final int ip = i;
             lookUpService.submit(() -> {
+                DaikinBase daikin = getDaikin(args.length > 1 ? args[1] : "", ip, DEFAULT_PORT);
                 try {
-                    String[] nameAndAddressOfUnit = controller.checkApiExist(getDaikin(args.length>1?args[1]:"", ip, DEFAULT_PORT));
-                    foundUnits.add(nameAndAddressOfUnit);
+                    String[] nameAndAddressOfUnit = controller.checkApiExist(daikin);
+                    if (nameAndAddressOfUnit != null) {
+                        foundUnits.add(nameAndAddressOfUnit);
+                    }
+                } catch (ConnectTimeoutException | SocketTimeoutException ex) {
+                    LOG.debug("Scanned " + daikin.getHost() + ". Nothing found, reason (" + ex.getMessage() + ")");
                 } catch (IOException e) {
-                    LOG.trace(e); //we just expect lots of exceptions here while scanning
+                    LOG.info("Scanned " + daikin.getHost() + ". Nothing found.", e);
                     return;
                 }
             });
@@ -154,7 +164,7 @@ public class DaikinController {
         if (targetHumidity > 0 && targetHumidity < 100) daikin.setTargetHumidity(targetHumidity);
     }
 
-    private static void writeStateToFile(CommandParser cParser, DaikinBase daikin, String[] nameAndAddressOfUnit) {
+    private void writeStateToFile(CommandParser cParser, DaikinBase daikin, String[] nameAndAddressOfUnit) {
         String secondsToSleep = cParser.getCheckEvery().replaceAll("\\D", "");
         if (secondsToSleep.length() > 0) {
             while (true) {
@@ -218,7 +228,7 @@ public class DaikinController {
         };
     }
 
-    private static void sleep(int seconds) {
+    private void sleep(int seconds) {
         try {
             Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(seconds));
         } catch (InterruptedException e) {
@@ -227,7 +237,7 @@ public class DaikinController {
         }
     }
 
-    private static void tryWriteToFile(String writeToFile, DaikinBase daikin, String[] nameAndAddressOfUnit) throws IOException {
+    private void tryWriteToFile(String writeToFile, DaikinBase daikin, String[] nameAndAddressOfUnit) throws IOException {
         Path filePath = Paths.get(writeToFile);
         if (!Files.exists(filePath)) {
             filePath = Files.createFile(filePath);
