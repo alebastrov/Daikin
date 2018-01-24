@@ -6,6 +6,7 @@ import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.util.RestConnector;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +23,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     @Override
-    public void updateDaikinState(boolean isVerboseOutput) {
+    public void updateDaikinState(boolean isVerboseOutput) throws IOException {
         // posts the state of this object to the Daikin unit, updating it
         Map<String, String> parameters = new LinkedHashMap<>();
         StringBuilder command = new StringBuilder();
@@ -55,7 +56,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     @Override
-    public void readDaikinState(boolean verboseOutput) {
+    public void readDaikinState(boolean verboseOutput) throws IOException {
         // this returns a CSV line of properties and their values, which we 
         // then parse and store as properties on this Daikin instance
         List<String> strings = readFromAdapter(verboseOutput, GET_CONTROL_INFO);
@@ -200,7 +201,7 @@ public class WirelessDaikin extends DaikinBase {
 		}
 	}
 	
-	List<String> readFromAdapter(boolean verboseOutput, String pathToApi) {
+	List<String> readFromAdapter(boolean verboseOutput, String pathToApi) throws IOException {
         return RestConnector.submitGet(this, pathToApi, verboseOutput);
     }
     
