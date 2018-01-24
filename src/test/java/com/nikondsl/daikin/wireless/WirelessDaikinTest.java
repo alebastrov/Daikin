@@ -20,10 +20,10 @@ public class WirelessDaikinTest {
 	
 	@Test
 	public void testParseStatusResponses() throws IOException {
-		doReturn(Collections.singletonList(controlResponse)).when(wirelessDaikin).readFromAdapter(true, "/aircon/get_control_info");
-		doReturn(Collections.singletonList(sensorResponse)).when(wirelessDaikin).readFromAdapter(true, "/aircon/get_sensor_info");
+		doReturn(Collections.singletonList(controlResponse)).when(wirelessDaikin).readFromAdapter("/aircon/get_control_info");
+		doReturn(Collections.singletonList(sensorResponse)).when(wirelessDaikin).readFromAdapter("/aircon/get_sensor_info");
 		
-		wirelessDaikin.readDaikinState(true);
+		wirelessDaikin.readDaikinState();
 		
 		assertEquals("Wireless Daikin unit [ \n" +
 				"  Host: ip.address\n" +

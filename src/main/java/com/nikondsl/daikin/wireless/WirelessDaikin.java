@@ -5,6 +5,8 @@ import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.util.RestConnector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -14,6 +16,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class WirelessDaikin extends DaikinBase {
+	private final Logger LOG = LogManager.getLogger(WirelessDaikin.class);
+
     private static final String GET_CONTROL_INFO = "/aircon/get_control_info";
     private static final String SET_CONTROL_INFO = "/aircon/set_control_info";
     private static final String GET_SENSOR_INFO = "/aircon/get_sensor_info";
@@ -23,7 +27,7 @@ public class WirelessDaikin extends DaikinBase {
     }
 
     @Override
-    public void updateDaikinState(boolean isVerboseOutput) throws IOException {
+    public void updateDaikinState() throws IOException {
         // posts the state of this object to the Daikin unit, updating it
         Map<String, String> parameters = new LinkedHashMap<>();
         StringBuilder command = new StringBuilder();
@@ -52,41 +56,42 @@ public class WirelessDaikin extends DaikinBase {
         command.append(getTargetHumidity());
         parameters.put("shum", String.valueOf(getTargetHumidity()));
 
-        RestConnector.submitPost(this, SET_CONTROL_INFO, command.toString(), parameters, isVerboseOutput);
+        RestConnector.submitPost(this, SET_CONTROL_INFO, command.toString(), parameters);
     }
 
     @Override
-    public void readDaikinState(boolean verboseOutput) throws IOException {
+    public void readDaikinState() throws IOException {
         // this returns a CSV line of properties and their values, which we 
         // then parse and store as properties on this Daikin instance
-        List<String> strings = readFromAdapter(verboseOutput, GET_CONTROL_INFO);
+        List<String> strings = readFromAdapter(GET_CONTROL_INFO);
         if (strings == null || strings.isEmpty()) {
-            if (verboseOutput) System.err.println("Could not read anything from adapter");
+            LOG.warn("Could not read anything from adapter for " + GET_CONTROL_INFO);
             return;
         }
         String controlInfo = strings.get(0);
-        if (verboseOutput) System.out.println("Got for (" + GET_CONTROL_INFO + "): " + controlInfo);
-		parseControlInfoResponse(verboseOutput, controlInfo);
+        LOG.debug("Got for (" + GET_CONTROL_INFO + "): " + controlInfo);
+		parseControlInfoResponse(controlInfo);
 
         // we also read in the sensor values that we care about
-		strings = readFromAdapter(verboseOutput, GET_SENSOR_INFO);
+		strings = readFromAdapter(GET_SENSOR_INFO);
 		if (strings == null || strings.isEmpty()) {
-			if (verboseOutput) System.err.println("Could not read anything from adapter");
+			LOG.warn("Could not read anything from adapter for " + GET_SENSOR_INFO);
 			return;
 		}
 		String sensorInfo = strings.get(0);
-		if (verboseOutput) System.out.println("Got for (" + GET_SENSOR_INFO + "): " + sensorInfo);
-		parseSensorResponse(verboseOutput, sensorInfo);
+		LOG.debug("Got for (" + GET_SENSOR_INFO + "): " + sensorInfo);
+		parseSensorResponse(sensorInfo);
     }
 	
-	private void parseSensorResponse(boolean verboseOutput, String sensorInfo) {
+	private void parseSensorResponse(String sensorInfo) {
 		Map<String, String> properties;
 		properties = createMap(sensorInfo);
 		
 		for (Entry<String, String> property : properties.entrySet()) {
 			String key = property.getKey();
 			String value = property.getValue();
-			//ret=OK,htemp=26.0,hhum=-,otemp=2.5,err=0,cmpfreq=26
+			LOG.trace("Parsing sensor response: " + key + "=" + value);
+
 			switch (key) {
 				case "ret":
 					if (!"ok".equalsIgnoreCase(value))
@@ -108,17 +113,18 @@ public class WirelessDaikin extends DaikinBase {
 				case "cmpfreq":
 					break;
 				default:
-					if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
+					LOG.warn("Ignoring unknown sensor response parameter, got " + key + "=" + value);
 			}
 		}
 	}
 	
-	private void parseControlInfoResponse(boolean verboseOutput, String controlInfo) {
+	private void parseControlInfoResponse(String controlInfo) {
 		Map<String, String> properties = createMap(controlInfo);
 		
 		for (Entry<String, String> property : properties.entrySet()) {
 			String key = property.getKey();
 			String value = property.getValue();
+			LOG.trace("Parsing control info: " + key + "=" + value);
 
 			switch (key) {
 				case "ret":
@@ -196,13 +202,13 @@ public class WirelessDaikin extends DaikinBase {
 					break;
 
 				default:
-					if (verboseOutput) System.err.println("Ignoring got " + key + "=" + value);
+					LOG.warn("Ignoring unknown control response parameter, got " + key + "=" + value);
 			}
 		}
 	}
 	
-	List<String> readFromAdapter(boolean verboseOutput, String pathToApi) throws IOException {
-        return RestConnector.submitGet(this, pathToApi, verboseOutput);
+	List<String> readFromAdapter(String pathToApi) throws IOException {
+        return RestConnector.submitGet(this, pathToApi);
     }
     
     private Map<String, String> createMap(String controlInfo) {

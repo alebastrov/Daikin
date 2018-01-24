@@ -34,18 +34,16 @@ public class RestConnector {
                 .build();
     }
 
-    public static List<String> submitGet(DaikinBase daikin, String path, boolean verboseOutput) throws IOException {
+    public static List<String> submitGet(DaikinBase daikin, String path) throws IOException {
         HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig()).build();
         HttpGet httpGet = new HttpGet(daikin.getHost() + ":" + daikin.getPort() + path);
         HttpResponse response = httpClient.execute(httpGet);
-        if (verboseOutput) {
-            LOG.debug("request=" + httpGet.toString());
-            LOG.debug("response=" + EntityUtils.toString(response.getEntity()));
-        }
+        LOG.trace("request=" + httpGet.toString());
+        LOG.trace("response=" + EntityUtils.toString(response.getEntity()));
         return Collections.singletonList(convertStreamToString(response.getEntity().getContent()));
     }
 
-    public static String submitPost(DaikinBase daikin, String path, String post, Map<String, String> parameters, boolean verboseOutput) throws IOException {
+    public static String submitPost(DaikinBase daikin, String path, String post, Map<String, String> parameters) throws IOException {
         HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig()).build();
         HttpPost httpPost = new HttpPost(daikin.getHost() + ":" + daikin.getPort() + path);
         List<NameValuePair> params = new ArrayList<>();
@@ -54,10 +52,8 @@ public class RestConnector {
         });
         httpPost.setEntity(new UrlEncodedFormEntity(params));
         HttpResponse response = httpClient.execute(httpPost);
-        if (verboseOutput) {
-            LOG.debug("request=" + post);
-            LOG.debug("response=" + EntityUtils.toString(response.getEntity()));
-        }
+        LOG.trace("request=" + post);
+        LOG.trace("response=" + EntityUtils.toString(response.getEntity()));
         return EntityUtils.toString(response.getEntity());
     }
     

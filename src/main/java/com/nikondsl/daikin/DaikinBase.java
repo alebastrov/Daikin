@@ -89,7 +89,7 @@ public abstract class DaikinBase {
         return result.toString();
     }
 
-    public abstract void updateDaikinState(boolean isVerboseOutput) throws IOException;
+    public abstract void updateDaikinState() throws IOException;
 
-    public abstract void readDaikinState(boolean verboseOutput) throws IOException;
+    public abstract void readDaikinState() throws IOException;
 }

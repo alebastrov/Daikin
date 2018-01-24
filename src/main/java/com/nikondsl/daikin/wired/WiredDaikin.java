@@ -39,7 +39,7 @@ public class WiredDaikin extends DaikinBase {
     }
 
     @Override
-    public void updateDaikinState(boolean isVerboseOutput) throws IOException {
+    public void updateDaikinState() throws IOException {
         // posts the state of this object to the Daikin unit, updating it
         Map<String, String> parameters = new HashMap<>();
         StringBuilder sb = new StringBuilder();
@@ -68,13 +68,13 @@ public class WiredDaikin extends DaikinBase {
         sb.append("&wSETd1=Set");
         parameters.put("wSETd1", "Set");
 
-        RestConnector.submitPost(this, SET_STATE, sb.toString(), parameters, isVerboseOutput);
+        RestConnector.submitPost(this, SET_STATE, sb.toString(), parameters);
     }
 
     @Override
-    public void readDaikinState(boolean verboseOutput) throws IOException {
+    public void readDaikinState() throws IOException {
         // returns a line delimited list of values, with a '.' after each value
-        List<String> properties = parseProperties(RestConnector.submitGet(this, GET_STATE, verboseOutput));
+        List<String> properties = parseProperties(RestConnector.submitGet(this, GET_STATE));
 
         // check the response was OK
         if (!"OK".equals(properties.get(0)))

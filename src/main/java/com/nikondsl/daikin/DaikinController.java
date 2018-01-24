@@ -10,7 +10,6 @@ import com.nikondsl.daikin.wireless.WirelessDaikin;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -70,12 +69,14 @@ public class DaikinController {
                 controller.writeStateToFile(cParser, daikin, nameAndAddressOfUnit);
                 return;
             }
-            daikin.readDaikinState(cParser.isVerboseOutput());
+            daikin.readDaikinState();
+            controller.LOG.debug("Initial state of unit [" + nameAndAddressOfUnit[0] + "]: " + daikin);
+
             setParametersForUnit(cParser, daikin);
-            if (cParser.isVerboseOutput()) controller.LOG.debug("State before for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
-            daikin.updateDaikinState(cParser.isVerboseOutput());
-            daikin.readDaikinState(cParser.isVerboseOutput());
-            controller.LOG.info("State after for [" + nameAndAddressOfUnit[0] + "]: " + daikin);
+            daikin.updateDaikinState(); //send command to unit
+
+            daikin.readDaikinState();
+            controller.LOG.info("State of unit after sending a command [" + nameAndAddressOfUnit[0] + "]: " + daikin);
         } catch (IOException ex) {
             controller.LOG.error("Could not connect to a Daikin unit: " + daikin, ex);
         }
@@ -103,8 +104,6 @@ public class DaikinController {
                 " (auto), possible values: (silent|auto|1|2|3|4|5)");
         System.err.println(getGreenString("-direction") +
                 " (), possible values: (|h|v|hv|vh)");
-        System.err.println(getGreenString("-verbose") +
-                " (), possible values: (|any)");
         System.err.println(getGreenString("-file") +
                 " (), possible values: (any path)");
         System.err.println(getGreenString("-check.every") +
@@ -166,20 +165,21 @@ public class DaikinController {
 
     private void writeStateToFile(CommandParser cParser, DaikinBase daikin, String[] nameAndAddressOfUnit) {
         String secondsToSleep = cParser.getCheckEvery().replaceAll("\\D", "");
-        if (secondsToSleep.length() > 0) {
-            while (true) {
-                int seconds = Integer.parseInt(secondsToSleep);
-                if (seconds > TimeUnit.MINUTES.toMillis(5) || seconds == 0) seconds = 60;
-                try {
-                    daikin.readDaikinState(cParser.isVerboseOutput());
-                    if (cParser.getWriteToFile() != null && cParser.getWriteToFile().length() > 0) {
-                        tryWriteToFile(cParser.getWriteToFile(), daikin, nameAndAddressOfUnit);
-                    }
-                    sleep(seconds);
-                } catch (Exception e) {
-                    LOG.error("Could not read Daikin unit state", e);
-                    sleep(1);
+        if (secondsToSleep.length() <= 0) {
+            return;
+        }
+        while (true) {
+            int seconds = Integer.parseInt(secondsToSleep);
+            if (seconds > TimeUnit.MINUTES.toMillis(5) || seconds == 0) seconds = 60;
+            try {
+                daikin.readDaikinState();
+                if (cParser.getWriteToFile() != null && cParser.getWriteToFile().length() > 0) {
+                    tryWriteToFile(cParser.getWriteToFile(), daikin, nameAndAddressOfUnit);
                 }
+                sleep(seconds);
+            } catch (Exception e) {
+                LOG.error("Could not read Daikin unit state", e);
+                sleep(1);
             }
         }
     }
@@ -201,15 +201,15 @@ public class DaikinController {
             nameOfUnit = responseFromAirCon.replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
             name = URLDecoder.decode(nameOfUnit, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            LOG.error("Scanned " + daikin.getHost() + ", found something like Daikin AC, but could not decode " + nameOfUnit);
-            return null;
+            LOG.warn("Scanned " + daikin.getHost() + ", found something like Daikin AC, but could not decode " + nameOfUnit);
+            return new String[]{"Unknown-" + daikin.getHost(), daikin.getHost()};
         }
         LOG.info("Found Daikin AC [" + name + "] at " + daikin.getHost());
         return new String[]{name, daikin.getHost()};
     }
 	
 	List<String> readIdentificationResponse(DaikinBase daikin) throws IOException {
-		return RestConnector.submitGet(daikin, COMMON_BASIC_INFO, false);
+		return RestConnector.submitGet(daikin, COMMON_BASIC_INFO);
 	}
 	
 	private static DaikinBase getDaikin(String subNet, final int ip, int port) {
@@ -219,11 +219,11 @@ public class DaikinController {
         return new DaikinBase("http://" + subNet + ip, port) {
 
             @Override
-            public void updateDaikinState(boolean verboseOutput) {
+            public void updateDaikinState() {
             }
 
             @Override
-            public void readDaikinState(boolean verboseOutput) {
+            public void readDaikinState() {
             }
         };
     }
@@ -231,9 +231,9 @@ public class DaikinController {
     private void sleep(int seconds) {
         try {
             Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(seconds));
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            LOG.error("Could not sleep for " + seconds + " seconds", e);
+            LOG.error("Could not sleep for " + seconds + " seconds", ex);
         }
     }
 
