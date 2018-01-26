@@ -1,0 +1,9 @@
+# Created by .ignore support plugin (hsz.mobi)
+Буде вилучено ${logPath}/
+Буде вилучено .gitignore
+Буде вилучено .idea/inspectionProfiles/
+Буде вилучено .idea/workspace.xml
+Буде вилучено dependency-reduced-pom.xml
+Буде вилучено lib/
+Буде вилучено log/
+Буде вилучено target/

@@ -1,5 +1,8 @@
 package com.nikondsl.daikin.enums;
 
+import com.nikondsl.daikin.ConsoleCommandParser;
+import lombok.Getter;
+
 public enum Mode {
 
     // only these options are available for wireless daikins
@@ -20,7 +23,24 @@ public enum Mode {
         this.wirelessCommand = wirelessCommand;
         this.wiredCommand = wiredCommand;
     }
-
+    
+    @Getter
+    private static ConsoleCommandParser<Mode> parser = new ConsoleCommandParser<Mode>() {
+        @Override
+        public Mode parseCommand(String consoleCommand) {
+            if ("Auto".equalsIgnoreCase(consoleCommand)) return Auto;
+            if ("Dry".equalsIgnoreCase(consoleCommand)) return Dry;
+            if ("Cool".equalsIgnoreCase(consoleCommand)) return Cool;
+            if ("Heat".equalsIgnoreCase(consoleCommand)) return Heat;
+            if ("Fan".equalsIgnoreCase(consoleCommand)) return Fan;
+            return OnlyFun;
+        }
+    };
+    
+    public static Mode parseConsoleCommand(String mode) {
+        return parser.parseCommand(mode);
+    }
+    
     public String getModeCommandForWired() {
         return wiredCommand;
     }
