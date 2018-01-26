@@ -46,7 +46,4 @@ public enum FanDirection {
 		return Off;
 	}
 	
-	public static FanDirection parseConsoleCommand(String fanDirection) {
-		return parser.parseCommand(fanDirection);
-	}
 }

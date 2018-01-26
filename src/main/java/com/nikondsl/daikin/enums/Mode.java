@@ -36,12 +36,8 @@ public enum Mode {
             return OnlyFun;
         }
     };
-    
-    public static Mode parseConsoleCommand(String mode) {
-        return parser.parseCommand(mode);
-    }
-    
-    public String getModeCommandForWired() {
+	
+	public String getModeCommandForWired() {
         return wiredCommand;
     }
 

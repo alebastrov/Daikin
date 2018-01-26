@@ -60,8 +60,5 @@ public enum Fan {
 
         return Silent;
     }
-    
-    public static Fan parseConsoleCommand(String fan) {
-		return parser.parseCommand(fan);
-	}
+	
 }
