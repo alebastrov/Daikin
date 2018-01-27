@@ -29,8 +29,8 @@ public class RestConnector {
     static RequestConfig createRequestConfig() {
         return RequestConfig
                 .custom()
-                .setConnectTimeout((int) TimeUnit.SECONDS.toMillis(1))
-                .setSocketTimeout((int) TimeUnit.SECONDS.toMillis(2))
+                .setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5))
+                .setSocketTimeout((int) TimeUnit.SECONDS.toMillis(5))
                 .build();
     }
 
