@@ -7,6 +7,8 @@ import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +45,10 @@ public class DaikinController {
     public static final int DEFAULT_PORT = 80;
 	public static final String COMMON_BASIC_INFO = "/common/basic_info";
 	
+	@Setter
+    @Getter
+	private CommandMode commandMode = CommandMode.COMMAND;
+	
 	public static void main(String[] args) throws InterruptedException {
         final DaikinController controller = new DaikinController();
         if (args.length == 0) {
@@ -52,6 +58,7 @@ public class DaikinController {
         }
         for (String arg : args) {
             if ("-scan".equals(arg)) {
+                controller.setCommandMode(CommandMode.SCANNING);
                 controller.scanSubNet(args, controller);
                 return;
             }
@@ -209,7 +216,7 @@ public class DaikinController {
     }
 	
 	List<String> readIdentificationResponse(DaikinBase daikin) throws IOException {
-		return RestConnector.submitGet(daikin, COMMON_BASIC_INFO);
+		return RestConnector.submitGet(daikin, COMMON_BASIC_INFO, commandMode);
 	}
 	
 	private static DaikinBase getDaikin(String subNet, final int ip, int port) {

@@ -1,5 +1,6 @@
 package com.nikondsl.daikin.wired;
 
+import com.nikondsl.daikin.CommandMode;
 import com.nikondsl.daikin.DaikinBase;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
@@ -74,7 +75,7 @@ public class WiredDaikin extends DaikinBase {
     @Override
     public void readDaikinState() throws IOException {
         // returns a line delimited list of values, with a '.' after each value
-        List<String> properties = parseProperties(RestConnector.submitGet(this, GET_STATE));
+        List<String> properties = parseProperties(RestConnector.submitGet(this, GET_STATE, CommandMode.COMMAND));
 
         // check the response was OK
         if (!"OK".equals(properties.get(0)))

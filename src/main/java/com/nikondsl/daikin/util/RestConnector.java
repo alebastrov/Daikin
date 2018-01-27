@@ -1,5 +1,6 @@
 package com.nikondsl.daikin.util;
 
+import com.nikondsl.daikin.CommandMode;
 import com.nikondsl.daikin.DaikinBase;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -26,16 +27,17 @@ import java.util.concurrent.TimeUnit;
 public class RestConnector {
     private static final Logger LOG = LogManager.getLogger(RestConnector.class);
 
-    static RequestConfig createRequestConfig() {
+    static RequestConfig createRequestConfig(CommandMode commandMode) {
+        int timeoutInSeconds = commandMode == CommandMode.SCANNING ? 1 : 5;
         return RequestConfig
                 .custom()
-                .setConnectTimeout((int) TimeUnit.SECONDS.toMillis(5))
-                .setSocketTimeout((int) TimeUnit.SECONDS.toMillis(5))
+                .setConnectTimeout((int) TimeUnit.SECONDS.toMillis(timeoutInSeconds))
+                .setSocketTimeout((int) TimeUnit.SECONDS.toMillis(timeoutInSeconds))
                 .build();
     }
 
-    public static List<String> submitGet(DaikinBase daikin, String path) throws IOException {
-        HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig()).build();
+    public static List<String> submitGet(DaikinBase daikin, String path, CommandMode commandMode) throws IOException {
+        HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig(commandMode)).build();
         HttpGet httpGet = new HttpGet(daikin.getHost() + ":" + daikin.getPort() + path);
         HttpResponse response = httpClient.execute(httpGet);
         LOG.trace("request=" + httpGet.toString());
@@ -43,7 +45,7 @@ public class RestConnector {
     }
 
     public static String submitPost(DaikinBase daikin, String path, String post, Map<String, String> parameters) throws IOException {
-        HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig()).build();
+        HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig(CommandMode.COMMAND)).build();
         HttpPost httpPost = new HttpPost(daikin.getHost() + ":" + daikin.getPort() + path);
         List<NameValuePair> params = new ArrayList<>();
         parameters.entrySet().forEach(entry -> {

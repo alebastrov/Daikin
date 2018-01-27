@@ -1,5 +1,6 @@
 package com.nikondsl.daikin.wireless;
 
+import com.nikondsl.daikin.CommandMode;
 import com.nikondsl.daikin.DaikinBase;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
@@ -208,7 +209,7 @@ public class WirelessDaikin extends DaikinBase {
 	}
 	
 	List<String> readFromAdapter(String pathToApi) throws IOException {
-        return RestConnector.submitGet(this, pathToApi);
+        return RestConnector.submitGet(this, pathToApi, CommandMode.COMMAND);
     }
     
     private Map<String, String> createMap(String controlInfo) {
