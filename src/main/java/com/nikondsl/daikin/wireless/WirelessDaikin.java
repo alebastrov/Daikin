@@ -26,8 +26,13 @@ public class WirelessDaikin extends DaikinBase {
     public WirelessDaikin(String host, int port) {
         super(host, port);
     }
-
-    @Override
+	
+	@Override
+	protected String getTypeOfUnit() {
+		return "Wireless ";
+	}
+	
+	@Override
     public void updateDaikinState() throws IOException {
         // posts the state of this object to the Daikin unit, updating it
         Map<String, String> parameters = new LinkedHashMap<>();
@@ -65,7 +70,7 @@ public class WirelessDaikin extends DaikinBase {
         // this returns a CSV line of properties and their values, which we 
         // then parse and store as properties on this Daikin instance
         List<String> strings = readFromAdapter(GET_CONTROL_INFO);
-        if (strings == null || strings.isEmpty()) {
+        if (strings.isEmpty()) {
             LOG.warn("Could not read anything from unit " + GET_CONTROL_INFO);
             return;
         }
@@ -75,7 +80,7 @@ public class WirelessDaikin extends DaikinBase {
 
         // we also read in the sensor values that we care about
 		strings = readFromAdapter(GET_SENSOR_INFO);
-		if (strings == null || strings.isEmpty()) {
+		if (strings.isEmpty()) {
 			LOG.warn("Could not read anything from unit " + GET_SENSOR_INFO);
 			return;
 		}
@@ -216,9 +221,13 @@ public class WirelessDaikin extends DaikinBase {
         Map<String, String> properties = new HashMap<>();
         String[] splitString = controlInfo.split(",");
         for (String property : splitString) {
-            int equalsPos = property.indexOf("=");
-            String key = property.substring(0, equalsPos);
-            String value = property.substring(equalsPos + 1);
+            String[] pair = property.split("=");
+            if (pair.length != 2) {
+            	LOG.warn("Could not parse " + property + " as key=value");
+            	continue;
+			}
+            String key = pair[0];
+            String value = pair[1];
             properties.put(key, value);
         }
         return properties;

@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -39,7 +38,8 @@ import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RESET;
 
 
 public class DaikinController {
-    private final Logger LOG = LogManager.getLogger(DaikinController.class);
+	public static final int LAST_ADDRESS_IN_SUB_NET = 255;
+	private final Logger LOG = LogManager.getLogger(DaikinController.class);
 
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
@@ -122,15 +122,10 @@ public class DaikinController {
     }
 
     private void scanSubNet(String[] args, DaikinController controller) throws InterruptedException {
-        final Set<String[]> foundUnits = new ConcurrentSkipListSet<>(new Comparator<String[]>() {
-            @Override
-            public int compare(String[] o1, String[] o2) {
-                return (o1[0] + o1[1]).compareTo(o2[0] + o2[1]);
-            }
-        });
+        final Set<String[]> foundUnits = new ConcurrentSkipListSet<>((o1, o2) -> (o1[0] + o1[1]).compareTo(o2[0] + o2[1]));
         LOG.info("Scanning started, please wait about couple minutes ...");
         ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
-        for (int i = 1; i <= 255; i++) {
+        for (int i = 1; i <= LAST_ADDRESS_IN_SUB_NET; i++) {
             final int ip = i;
             lookUpService.submit(() -> {
                 DaikinBase daikin = getDaikin(args.length > 1 ? args[1] : "", ip, DEFAULT_PORT);
@@ -193,14 +188,14 @@ public class DaikinController {
 
     String[] checkApiExist(DaikinBase daikin) throws IOException {
         List<String> rows = readIdentificationResponse(daikin);
-        if (rows == null || rows.size()==1 && "".equals(rows.get(0))) {
+        if (rows.size()==1 && "".equals(rows.get(0))) {
             LOG.debug("Scanned " + daikin.getHost() + ", not found");
-            return null;
+            return new String[0];
         }
         String responseFromAirCon = rows.get(0);
         if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) {
             LOG.info("Scanned " + daikin.getHost() + ", found something");
-            return null;
+            return new String[0];
         }
         String nameOfUnit = "";
         String name = null;
@@ -224,8 +219,13 @@ public class DaikinController {
         else subNet = subNet.replaceAll("((1?[0-9]{1,2}|2[0-4][0-9]|25[0-5]\\.){3})", "$1");
         if (!subNet.endsWith(".")) subNet += ".";
         return new DaikinBase("http://" + subNet + ip, port) {
-
-            @Override
+	
+			@Override
+			protected String getTypeOfUnit() {
+				return "Virtual ";
+			}
+	
+			@Override
             public void updateDaikinState() {
             }
 

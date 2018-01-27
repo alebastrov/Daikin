@@ -38,7 +38,12 @@ public class WiredDaikin extends DaikinBase {
     public WiredDaikin(String host, int port) {
         super(host, port);
     }
-
+    
+    @Override
+    protected String getTypeOfUnit() {
+        return "Wired ";
+    }
+    
     @Override
     public void updateDaikinState() throws IOException {
         // posts the state of this object to the Daikin unit, updating it

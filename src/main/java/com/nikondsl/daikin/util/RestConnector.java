@@ -2,6 +2,7 @@ package com.nikondsl.daikin.util;
 
 import com.nikondsl.daikin.CommandMode;
 import com.nikondsl.daikin.DaikinBase;
+import lombok.extern.log4j.Log4j2;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -12,8 +13,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,9 +23,9 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
+@Log4j2
 public class RestConnector {
-    private static final Logger LOG = LogManager.getLogger(RestConnector.class);
-
+    
     static RequestConfig createRequestConfig(CommandMode commandMode) {
         int timeoutInSeconds = commandMode == CommandMode.SCANNING ? 1 : 5;
         return RequestConfig
@@ -40,7 +39,7 @@ public class RestConnector {
         HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig(commandMode)).build();
         HttpGet httpGet = new HttpGet(daikin.getHost() + ":" + daikin.getPort() + path);
         HttpResponse response = httpClient.execute(httpGet);
-        LOG.trace("request=" + httpGet.toString());
+        log.trace("request=" + httpGet.toString());
         return Collections.singletonList(convertStreamToString(response.getEntity().getContent()));
     }
 
@@ -53,7 +52,7 @@ public class RestConnector {
         });
         httpPost.setEntity(new UrlEncodedFormEntity(params));
         HttpResponse response = httpClient.execute(httpPost);
-        LOG.trace("request=" + post);
+        log.trace("request=" + post);
         return EntityUtils.toString(response.getEntity());
     }
     

@@ -4,19 +4,20 @@ import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.enums.Timer;
-import com.nikondsl.daikin.wireless.WirelessDaikin;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.IOException;
 
 public abstract class DaikinBase {
-
-    @Getter
+	
+	public static final int COMFORT_TEMPERATURE = 22;
+	public static final int DEFAUL_HTTP_PORT = 80;
+	@Getter
     protected String host;
     @Getter
     @Setter
-    protected double targetTemperature = 22;
+    protected double targetTemperature = COMFORT_TEMPERATURE;
     @Getter
     @Setter
     protected boolean on = false;
@@ -41,20 +42,20 @@ public abstract class DaikinBase {
     @Getter
     protected double outsideTemperature = 0;
     @Getter
-    protected int port = 80;
+    protected int port = DEFAUL_HTTP_PORT;
 
     public DaikinBase(String host, int port) {
         this.host = host;
         this.port = port;
     }
     
+    protected abstract String getTypeOfUnit();
+    
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
 
-        boolean isWirelessUnit = this instanceof WirelessDaikin;
-
-        result.append(isWirelessUnit ? "Wireless " : "Wired ");
+        result.append(getTypeOfUnit());
         result.append("Daikin unit [ ");
 
         result.append("\n  Host: ");
