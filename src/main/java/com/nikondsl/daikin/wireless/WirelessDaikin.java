@@ -223,7 +223,7 @@ public class WirelessDaikin extends DaikinBase {
         for (String property : splitString) {
             String[] pair = property.split("=");
             if (pair.length != 2) {
-            	LOG.warn("Could not parse " + property + " as key=value");
+            	LOG.warn("Could not parse '" + property + "' as key=value in \n" + controlInfo);
             	continue;
 			}
             String key = pair[0];
