@@ -221,7 +221,7 @@ public class WirelessDaikin extends DaikinBase {
         Map<String, String> properties = new HashMap<>();
         String[] splitString = controlInfo.split(",");
         for (String property : splitString) {
-            String[] pair = property.split("=");
+            String[] pair = property.split("=",2);
             if (pair.length != 2) {
             	LOG.warn("Could not parse '" + property + "' as key=value in \n" + controlInfo);
             	continue;
