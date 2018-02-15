@@ -23,7 +23,7 @@ public class ExpressionProcessor {
 	
 	public static void main(String[] args) throws IOException {
 		Rule rule =new Rule();
-		rule.setExpression("OuterTemperature < -15 && Power");
+		rule.setExpression("OuterTemperature < -1 && Power");
 		DaikinBase action = DaikinFactory.createWirelessDaikin("http://192.168.1.215", 80);
 		action.readDaikinState();
 		
