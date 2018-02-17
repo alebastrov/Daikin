@@ -1,0 +1,29 @@
+<rules>
+    <rule>
+        <expression>InnerTemperature &lt;= 18 &amp;&amp; !Power</expression>
+        <action>
+            <power>on</power>
+            <mode>heat</mode>
+            <fan>
+                <speed>2</speed>
+                <direction></direction>
+            </fan>
+            <temperature>22</temperature>
+        </action>
+        <name>Автоматическое поддержание температур</name>
+    </rule>
+    <rule>
+        <expression>OuterTemperature &lt;= -15 &amp;&amp; Power</expression>
+        <action>
+            <power>off</power>
+            <mode>heat</mode>
+            <fan>
+                <speed>2</speed>
+                <direction></direction>
+            </fan>
+            <temperature>22</temperature>
+        </action>
+        <name>Автоматическое отключение (слишком холодно снаружи)</name>
+    </rule>
+
+</rules>
