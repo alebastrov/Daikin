@@ -36,7 +36,11 @@ public class RestConnector {
     }
 
     public static List<String> submitGet(DaikinBase daikin, String path, CommandMode commandMode) throws IOException {
-        HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig(commandMode)).build();
+        HttpClient httpClient = HttpClientBuilder
+                .create()
+                .setDefaultRequestConfig(createRequestConfig(commandMode))
+                .setMaxConnTotal(5)
+                .build();
         HttpGet httpGet = new HttpGet(daikin.getHost() + ":" + daikin.getPort() + path);
         HttpResponse response = httpClient.execute(httpGet);
         log.trace("request=" + httpGet.toString());

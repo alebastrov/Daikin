@@ -1,6 +1,6 @@
 <rules>
     <rule>
-        <expression>InnerTemperature &lt;= 18 &amp;&amp; !Power</expression>
+        <expression>InnerTemperature &lt;= 19 &amp;&amp; !Power</expression>
         <action>
             <power>on</power>
             <mode>heat</mode>

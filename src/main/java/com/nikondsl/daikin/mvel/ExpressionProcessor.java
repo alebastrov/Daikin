@@ -1,10 +1,16 @@
 package com.nikondsl.daikin.mvel;
 
+import com.beust.jcommander.Strings;
 import com.nikondsl.daikin.DaikinBase;
 import com.nikondsl.daikin.DaikinFactory;
+import com.nikondsl.daikin.enums.Fan;
+import com.nikondsl.daikin.enums.FanDirection;
+import com.nikondsl.daikin.enums.Mode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
@@ -16,11 +22,13 @@ import java.io.File;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ExpressionProcessor {
+	private static final Logger LOG = LogManager.getLogger(ExpressionProcessor.class);
 	
 	@ToString
 	private static class Rule {
@@ -39,32 +47,22 @@ public class ExpressionProcessor {
 	
 	public static void main(String[] args) throws Exception {
 		
-		loadFromConfig();
-		
-		if (true) return;
-//		Rule rule =new Rule();
-//		rule.setExpression("OuterTemperature < -1 && Power");
-		Rule rule =new Rule();
-		rule.setExpression("InnerTemperature <= 20 && !Power");
-		DaikinBase action = DaikinFactory.createWirelessDaikin("http://192.168.1.215", 80);
-		action.readDaikinState();
-		
-		
-		Map<String, Object> vars = new LinkedHashMap<String, Object>();
-		vars.put("OuterTemperature", action.getOutsideTemperature());
-		vars.put("InnerTemperature", action.getInsideTemperature());
-		vars.put("Power", action.isOn());
-		
-		action.setOn(true);
-		rule.setAction(action);
-		
-//		String expr="4 > OuterTemperature && !Power";
-		Serializable compiled = MVEL.compileExpression(rule.getExpression());
-		Boolean ret = (Boolean) MVEL.executeExpression(compiled, vars);
-		
-		if (ret) rule.getAction().updateDaikinState();
-		
-		System.err.println("ret="+ret);
+		List<Rule> rules = loadFromConfig();
+		DaikinBase currentState = DaikinFactory.createWirelessDaikin("http://192.168.1.215", 80);
+		for (Rule rule : rules) {
+			currentState.readDaikinState();
+			Map<String, Object> vars = new LinkedHashMap<String, Object>();
+			vars.put("OuterTemperature", currentState.getOutsideTemperature());
+			vars.put("InnerTemperature", currentState.getInsideTemperature());
+			vars.put("Power", currentState.isOn());
+			Serializable compiled = MVEL.compileExpression(rule.getExpression());
+			Boolean ret = (Boolean) MVEL.executeExpression(compiled, vars);
+			
+			if (ret) {
+				rule.getAction().updateDaikinState();
+				LOG.info("Сработало правило; " + rule.getNameOfRule());
+			}
+		}
 	}
 	
 	public static Document parse(File rulesFile) throws DocumentException {
@@ -77,20 +75,33 @@ public class ExpressionProcessor {
 		Path path = Paths.get("rules.xml").toAbsolutePath();
 		Document rules = parse(path.toFile());
 		List<Node> list = rules.selectNodes("//rule");
+		List<Rule> result = new ArrayList<>();
 	
 		for(Node node : list) {
 			String name = ((DefaultElement) node).element("name").getText();
 			String expression = ((DefaultElement) node).element("expression").getText();
 			Node actionNode = node.selectSingleNode("action");
 			String power = ((DefaultElement) actionNode).element("power").getText();
+			String mode =  ((DefaultElement) actionNode).element("mode").getText();
+			Node fanNode = actionNode.selectSingleNode("fan");
+			String fanSpeed =  ((DefaultElement) fanNode).element("speed").getText();
+			String fanDirection =  ((DefaultElement) fanNode).element("direction").getText();
 			Rule rule = new Rule();
 			rule.setNameOfRule(name);
 			rule.setExpression(expression);
-			DaikinBase action = DaikinFactory.createWirelessDaikin("http:192.168.1.215", 80);
+			DaikinBase action = DaikinFactory.createWirelessDaikin("http://192.168.1.215", 80);
 			action.setOn("on".equalsIgnoreCase(power));
+			action.setMode(Mode.getParser().parseCommand(mode));
+			if (!Strings.isStringEmpty(fanSpeed)) {
+				action.setFan(Fan.getParser().parseCommand(fanSpeed));
+			}
+			if (!Strings.isStringEmpty(fanDirection)) {
+				action.setFanDirection(FanDirection.getParser().parseCommand(fanDirection));
+			}
 			rule.setAction(action);
+			result.add(rule);
 			System.err.println("=== "+ rule);
 		}
-		return null;
+		return result;
 	}
 }
