@@ -25,5 +25,18 @@
         </action>
         <name>Автоматическое отключение (слишком холодно снаружи)</name>
     </rule>
+    <rule>
+        <expression>InnerTemperature &gt;= 26 &amp;&amp; !Power</expression>
+        <action>
+            <power>on</power>
+            <mode>cool</mode>
+            <fan>
+                <speed>2</speed>
+                <direction></direction>
+            </fan>
+            <temperature>22</temperature>
+        </action>
+        <name>Автоматическое включение (слишком жарко внутри)</name>
+    </rule>
 
 </rules>
