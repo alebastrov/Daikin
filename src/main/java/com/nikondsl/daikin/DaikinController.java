@@ -2,6 +2,9 @@ package com.nikondsl.daikin;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Strings;
+import com.diogonunes.jcdp.bw.Printer;
+import com.diogonunes.jcdp.color.ColoredPrinter;
+import com.diogonunes.jcdp.color.api.Ansi;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
@@ -90,35 +93,35 @@ public class DaikinController {
     }
 
     private static void printUsage() {
-        System.err.println(ANSI_RED + "Possible commands:" + ANSI_RESET);
-        System.err.println(getGreenString("-scan") +
-                " (192.168.1), possible values: (any subnet to scan ip addresses from 1 tp 255) ");
-        System.err.println(getGreenString("-protocol") +
-                " (http), possible values: (http|https)");
-        System.err.println(getGreenString("-host") +
-                " (), possible value: (any ipv4 address)");
-        System.err.println(getGreenString("-port") +
-                " (80), possible values: any port number");
-        System.err.println(getGreenString("-power") +
-                " (on), possible values: (on|off)");
-        System.err.println(getGreenString("-mode") +
-                " (auto), possible values: (auto|dry|cool|heat|fan)");
-        System.err.println(getGreenString("-temp") +
-                " (22), possible values: any integer >= 10 and <= 32");
-        System.err.println(getGreenString("-humid") +
-                " (3), possible values: (1-99)");
-        System.err.println(getGreenString("-fan") +
-                " (auto), possible values: (silent|auto|1|2|3|4|5)");
-        System.err.println(getGreenString("-direction") +
-                " (), possible values: (|h|v|hv|vh)");
-        System.err.println(getGreenString("-file") +
-                " (), possible values: (any path)");
-        System.err.println(getGreenString("-check.every") +
-                " (), possible values: (1-3600 seconds)");
+        ColoredPrinter yellowColor = new ColoredPrinter.Builder(1, false)
+                .foreground(Ansi.FColor.YELLOW).background(Ansi.BColor.BLACK)   //setting format
+                .build();
+        ColoredPrinter greenColor = new ColoredPrinter.Builder(1, false)
+                .foreground(Ansi.FColor.GREEN).background(Ansi.BColor.BLACK)   //setting format
+                .build();
+        ColoredPrinter whiteColor = new ColoredPrinter.Builder(1, false)
+                .foreground(Ansi.FColor.WHITE).background(Ansi.BColor.BLACK)   //setting format
+                .build();
+
+        yellowColor.println("Possible commands:");
+
+        printOptionInUsage(greenColor, whiteColor, "-scan", "(192.168.1), possible values: (any subnet to scan ip addresses from 1 to 255) ");
+        printOptionInUsage(greenColor, whiteColor, "-protocol ", "(http), possible values: (http|https)");
+        printOptionInUsage(greenColor, whiteColor, "-host ", "(), possible value: (any ipv4 address)");
+        printOptionInUsage(greenColor, whiteColor, "-port ", "(80), possible values: any port number");
+        printOptionInUsage(greenColor, whiteColor, "-power ", "(on), possible values: (on|off)");
+        printOptionInUsage(greenColor, whiteColor, "-mode ", "(auto), possible values: (auto|dry|cool|heat|fan)");
+        printOptionInUsage(greenColor, whiteColor, "-temp ", "(22), possible values: any integer >= 10 and <= 32");
+        printOptionInUsage(greenColor, whiteColor, "-humid ", "(3), possible values: (1-99)");
+        printOptionInUsage(greenColor, whiteColor, "-fan ", "(auto), possible values: (silent|auto|1|2|3|4|5)");
+        printOptionInUsage(greenColor, whiteColor, "-direction ", "(), possible values: (|h|v|hv|vh)");
+        printOptionInUsage(greenColor, whiteColor, "-file ", "(), possible values: (any path)");
+        printOptionInUsage(greenColor, whiteColor, "-check.every ", "(), possible values: (1-3600 seconds)");
     }
 
-    private static String getGreenString(String text) {
-        return ANSI_GREEN + text + ANSI_RESET;
+    private static void printOptionInUsage(ColoredPrinter printerForOption, ColoredPrinter printerForDescription, String option, String description) {
+        printerForOption.print(option + " ");
+        printerForDescription.println(description);
     }
 
     private void scanSubNet(String[] args, DaikinController controller) throws InterruptedException {

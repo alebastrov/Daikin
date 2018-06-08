@@ -30,11 +30,13 @@
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-runner:1.0.1" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.junit.platform:junit-platform-suite-api:1.0.1" level="project" />
     <orderEntry type="library" name="Maven: com.beust:jcommander:1.72" level="project" />
+    <orderEntry type="library" name="Maven: com.diogonunes:JCDP:2.0.3.1" level="project" />
+    <orderEntry type="library" name="Maven: org.fusesource.jansi:jansi:1.15" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.4" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.7" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />
     <orderEntry type="library" name="Maven: commons-codec:commons-codec:1.10" level="project" />
-    <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.16.18" level="project" />
+    <orderEntry type="library" name="Maven: org.projectlombok:lombok:1.16.8" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.mockito:mockito-core:2.13.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: net.bytebuddy:byte-buddy:1.7.9" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: net.bytebuddy:byte-buddy-agent:1.7.9" level="project" />
@@ -48,5 +50,6 @@
     <orderEntry type="library" name="Maven: org.mvel:mvel2:2.4.0.Final" level="project" />
     <orderEntry type="library" name="Maven: org.dom4j:dom4j:2.1.0" level="project" />
     <orderEntry type="library" name="Maven: jaxen:jaxen:1.1.6" level="project" />
+    <orderEntry type="library" name="Maven: dom4j:dom4j:1.1" level="project" />
   </component>
 </module>

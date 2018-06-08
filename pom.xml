@@ -60,6 +60,12 @@
             <version>1.72</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.diogonunes</groupId>
+            <artifactId>JCDP</artifactId>
+            <version>2.0.3.1</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -106,6 +112,16 @@
             <groupId>org.dom4j</groupId>
             <artifactId>dom4j</artifactId>
             <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.8</version>
         </dependency>
     </dependencies>
 
