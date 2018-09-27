@@ -20,6 +20,7 @@ import org.mvel2.MVEL;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -65,13 +66,13 @@ public class ExpressionProcessor {
 		}
 	}
 	
-	public static Document parse(File rulesFile) throws DocumentException {
+	public static Document parse(File rulesFile) throws DocumentException, MalformedURLException {
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(rulesFile);
 		return document;
 	}
 	
-	private static List<Rule> loadFromConfig() throws DocumentException {
+	private static List<Rule> loadFromConfig() throws DocumentException, MalformedURLException {
 		Path path = Paths.get("rules.xml").toAbsolutePath();
 		Document rules = parse(path.toFile());
 		List<Node> list = rules.selectNodes("//rule");

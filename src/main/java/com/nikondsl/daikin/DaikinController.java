@@ -2,7 +2,6 @@ package com.nikondsl.daikin;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Strings;
-import com.diogonunes.jcdp.bw.Printer;
 import com.diogonunes.jcdp.color.ColoredPrinter;
 import com.diogonunes.jcdp.color.api.Ansi;
 import com.nikondsl.daikin.enums.Fan;
@@ -35,10 +34,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_GREEN;
-import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RED;
-import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RESET;
-
 
 public class DaikinController {
 	public static final int LAST_ADDRESS_IN_SUB_NET = 255;
@@ -47,6 +42,9 @@ public class DaikinController {
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
 	public static final String COMMON_BASIC_INFO = "/common/basic_info";
+    ColoredPrinter greenColor = new ColoredPrinter.Builder(1, false)
+            .foreground(Ansi.FColor.GREEN).background(Ansi.BColor.BLACK)   //setting format
+            .build();
 	
 	@Setter
     @Getter
@@ -209,7 +207,8 @@ public class DaikinController {
             LOG.warn("Scanned " + daikin.getHost() + ", found something like Daikin AC, but could not decode " + nameOfUnit);
             return new String[]{"Unknown-" + daikin.getHost(), daikin.getHost()};
         }
-        LOG.info("Found Daikin AC [" + name + "] at " + daikin.getHost());
+        greenColor.println("Found Daikin AC [" + name + "] at " + daikin.getHost());
+//        LOG.info("Found Daikin AC [" + name + "] at " + daikin.getHost());
         return new String[]{name, daikin.getHost()};
     }
 	
