@@ -6,8 +6,7 @@ import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.util.RestConnector;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -16,10 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+@Slf4j
 public class WirelessDaikin extends DaikinBase {
-	private final Logger LOG = LogManager.getLogger(WirelessDaikin.class);
-
-    private static final String GET_CONTROL_INFO = "/aircon/get_control_info";
+	
+	private static final String GET_CONTROL_INFO = "/aircon/get_control_info";
     private static final String SET_CONTROL_INFO = "/aircon/set_control_info";
     private static final String GET_SENSOR_INFO = "/aircon/get_sensor_info";
     
@@ -71,21 +70,21 @@ public class WirelessDaikin extends DaikinBase {
         // then parse and store as properties on this Daikin instance
         List<String> strings = readFromAdapter(GET_CONTROL_INFO);
         if (strings.isEmpty()) {
-            LOG.warn("Could not read anything from unit " + GET_CONTROL_INFO);
+            log.warn("Could not read anything from unit " + GET_CONTROL_INFO);
             return;
         }
         String controlInfo = strings.get(0);
-        LOG.debug("Got response for (" + GET_CONTROL_INFO + "): " + controlInfo);
+        log.debug("Got response for (" + GET_CONTROL_INFO + "): " + controlInfo);
 		parseControlInfoResponse(controlInfo);
 
         // we also read in the sensor values that we care about
 		strings = readFromAdapter(GET_SENSOR_INFO);
 		if (strings.isEmpty()) {
-			LOG.warn("Could not read anything from unit " + GET_SENSOR_INFO);
+			log.warn("Could not read anything from unit " + GET_SENSOR_INFO);
 			return;
 		}
 		String sensorInfo = strings.get(0);
-		LOG.debug("Got response for (" + GET_SENSOR_INFO + "): " + sensorInfo);
+		log.debug("Got response for (" + GET_SENSOR_INFO + "): " + sensorInfo);
 		parseSensorResponse(sensorInfo);
     }
 	
@@ -96,7 +95,7 @@ public class WirelessDaikin extends DaikinBase {
 		for (Entry<String, String> property : properties.entrySet()) {
 			String key = property.getKey();
 			String value = property.getValue();
-			LOG.trace("Parsing sensor response: " + key + "=" + value);
+			log.trace("Parsing sensor response: " + key + "=" + value);
 
 			switch (key) {
 				case "ret":
@@ -119,7 +118,7 @@ public class WirelessDaikin extends DaikinBase {
 				case "cmpfreq":
 					break;
 				default:
-					LOG.warn("Ignoring unknown sensor response parameter, got " + key + "=" + value);
+					log.warn("Ignoring unknown sensor response parameter, got " + key + "=" + value);
 			}
 		}
 	}
@@ -130,7 +129,7 @@ public class WirelessDaikin extends DaikinBase {
 		for (Entry<String, String> property : properties.entrySet()) {
 			String key = property.getKey();
 			String value = property.getValue();
-			LOG.trace("Parsing control info: " + key + "=" + value);
+			log.trace("Parsing control info: " + key + "=" + value);
 
 			switch (key) {
 				case "ret":
@@ -208,7 +207,7 @@ public class WirelessDaikin extends DaikinBase {
 					break;
 
 				default:
-					LOG.warn("Ignoring unknown control response parameter, got " + key + "=" + value);
+					log.warn("Ignoring unknown control response parameter, got " + key + "=" + value);
 			}
 		}
 	}
@@ -223,7 +222,7 @@ public class WirelessDaikin extends DaikinBase {
         for (String property : splitString) {
             String[] pair = property.split("=",2);
             if (pair.length != 2) {
-            	LOG.warn("Could not parse '" + property + "' as key=value in \n" + controlInfo);
+            	log.warn("Could not parse '" + property + "' as key=value in \n" + controlInfo);
             	continue;
 			}
             String key = pair[0];

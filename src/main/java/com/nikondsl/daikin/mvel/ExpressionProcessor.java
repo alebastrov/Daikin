@@ -9,8 +9,7 @@ import com.nikondsl.daikin.enums.Mode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Node;
@@ -28,8 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class ExpressionProcessor {
-	private static final Logger LOG = LogManager.getLogger(ExpressionProcessor.class);
 	
 	@ToString
 	private static class Rule {
@@ -61,7 +60,7 @@ public class ExpressionProcessor {
 			
 			if (ret) {
 				rule.getAction().updateDaikinState();
-				LOG.info("Сработало правило; " + rule.getNameOfRule());
+				log.info("Сработало правило; " + rule.getNameOfRule());
 			}
 		}
 	}

@@ -11,9 +11,8 @@ import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -27,6 +26,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -34,10 +34,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-
+@Slf4j
 public class DaikinController {
 	public static final int LAST_ADDRESS_IN_SUB_NET = 255;
-	private final Logger LOG = LogManager.getLogger(DaikinController.class);
 
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
@@ -53,7 +52,7 @@ public class DaikinController {
 	public static void main(String[] args) throws InterruptedException {
         final DaikinController controller = new DaikinController();
         if (args.length == 0) {
-            controller.LOG.trace("No args[] provided, printing USAGE.");
+            controller.log.trace("No args[] provided, printing USAGE.");
             printUsage();
             return;
         }
@@ -78,15 +77,15 @@ public class DaikinController {
                 return;
             }
             daikin.readDaikinState();
-            controller.LOG.debug("Initial state of unit [" + nameAndAddressOfUnit[0] + "]: " + daikin);
+            controller.log.debug("Initial state of unit [" + nameAndAddressOfUnit[0] + "]: " + daikin);
 
             setParametersForUnit(cParser, daikin);
             daikin.updateDaikinState(); //send command to unit
 
             daikin.readDaikinState();
-            controller.LOG.info("State of unit after sending a command [" + nameAndAddressOfUnit[0] + "]: " + daikin);
+            controller.log.info("State of unit after sending a command [" + nameAndAddressOfUnit[0] + "]: " + daikin);
         } catch (IOException ex) {
-            controller.LOG.error("Could not connect to a Daikin unit: " + daikin, ex);
+            controller.log.error("Could not connect to a Daikin unit: " + daikin, ex);
         }
     }
 
@@ -123,8 +122,8 @@ public class DaikinController {
     }
 
     private void scanSubNet(String[] args, DaikinController controller) throws InterruptedException {
-        final Set<String[]> foundUnits = new ConcurrentSkipListSet<>((o1, o2) -> (o1[0] + o1[1]).compareTo(o2[0] + o2[1]));
-        LOG.info("Scanning started, please wait about couple minutes ...");
+        final Set<String[]> foundUnits = new ConcurrentSkipListSet<>(Comparator.comparing(o -> (o[0] + o[1])));
+        log.info("Scanning started, please wait about couple minutes ...");
         ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
         for (int i = 1; i <= LAST_ADDRESS_IN_SUB_NET; i++) {
             final int ip = i;
@@ -136,9 +135,9 @@ public class DaikinController {
                         foundUnits.add(nameAndAddressOfUnit);
                     }
                 } catch (ConnectTimeoutException | SocketTimeoutException ex) {
-                    LOG.debug("Scanned " + daikin.getHost() + ". Nothing found, reason (" + ex.getMessage() + ")");
+                    log.debug("Scanned " + daikin.getHost() + ". Nothing found, reason (" + ex.getMessage() + ")");
                 } catch (IOException e) {
-                    LOG.info("Scanned " + daikin.getHost() + ". Nothing found.", e);
+                    log.info("Scanned " + daikin.getHost() + ". Nothing found.");
                     return;
                 }
             });
@@ -146,9 +145,9 @@ public class DaikinController {
         lookUpService.shutdown();
         lookUpService.awaitTermination(2, TimeUnit.MINUTES);
 
-        LOG.info("Scanning finished, found " + foundUnits.size() + " units.");
+        log.info("Scanning finished, found " + foundUnits.size() + " units.");
         foundUnits.forEach((String[] nameAndAddressOfUnit) -> {
-            LOG.info("[" + nameAndAddressOfUnit[0] + "] on " + nameAndAddressOfUnit[1]);
+            log.info("[" + nameAndAddressOfUnit[0] + "] on " + nameAndAddressOfUnit[1]);
         });
     }
 
@@ -181,7 +180,7 @@ public class DaikinController {
                 }
                 sleep(seconds);
             } catch (Exception e) {
-                LOG.error("Could not read Daikin unit state", e);
+                log.error("Could not read Daikin unit state", e);
                 sleep(1);
             }
         }
@@ -190,12 +189,12 @@ public class DaikinController {
     String[] checkApiExist(DaikinBase daikin) throws IOException {
         List<String> rows = readIdentificationResponse(daikin);
         if (rows.size()==1 && "".equals(rows.get(0))) {
-            LOG.debug("Scanned " + daikin.getHost() + ", not found");
+            log.debug("Scanned " + daikin.getHost() + ", not found");
             return new String[0];
         }
         String responseFromAirCon = rows.get(0);
         if (!responseFromAirCon.startsWith("ret=OK,type=aircon,")) {
-            LOG.info("Scanned " + daikin.getHost() + ", found something");
+            log.info("Scanned " + daikin.getHost() + ", found something");
             return new String[0];
         }
         String nameOfUnit = "";
@@ -204,11 +203,11 @@ public class DaikinController {
             nameOfUnit = responseFromAirCon.replaceAll(".*,name=(.*?),", "$1").replaceAll("icon=.*", "");
             name = URLDecoder.decode(nameOfUnit, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            LOG.warn("Scanned " + daikin.getHost() + ", found something like Daikin AC, but could not decode " + nameOfUnit);
+            log.warn("Scanned " + daikin.getHost() + ", found something like Daikin AC, but could not decode " + nameOfUnit);
             return new String[]{"Unknown-" + daikin.getHost(), daikin.getHost()};
         }
         greenColor.println("Found Daikin AC [" + name + "] at " + daikin.getHost());
-//        LOG.info("Found Daikin AC [" + name + "] at " + daikin.getHost());
+        log.info("Found Daikin AC [" + name + "] at " + daikin.getHost());
         return new String[]{name, daikin.getHost()};
     }
 	
@@ -242,7 +241,7 @@ public class DaikinController {
             Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(seconds));
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            LOG.error("Could not sleep for " + seconds + " seconds", ex);
+            log.error("Could not sleep for " + seconds + " seconds", ex);
         }
     }
 
@@ -250,7 +249,7 @@ public class DaikinController {
         Path filePath = Paths.get(writeToFile);
         if (!Files.exists(filePath)) {
             filePath = Files.createFile(filePath);
-            LOG.info(filePath.toAbsolutePath().toString() + " is created");
+            log.info(filePath.toAbsolutePath().toString() + " is created");
         }
         DateTimeFormatterBuilder builder = new DateTimeFormatterBuilder();
         DateTimeFormatter formatter = builder.appendPattern("u").
@@ -268,7 +267,7 @@ public class DaikinController {
         LocalDateTime dateTime = LocalDateTime.now();
 
         String result = nameAndAddressOfUnit[0] + " (" + nameAndAddressOfUnit[1] + "), " + dateTime.format(formatter) + ", pow=" + (daikin.isOn() ? "1" : "0") + ", htemp=" + daikin.getInsideTemperature() + ", otemp=" + daikin.getOutsideTemperature() + "\r\n";
-        LOG.info(result);
+        log.info(result);
         Files.write(filePath, result.getBytes("UTF-8"), StandardOpenOption.APPEND);
     }
 }

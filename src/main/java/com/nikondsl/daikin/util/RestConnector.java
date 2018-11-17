@@ -2,7 +2,7 @@ package com.nikondsl.daikin.util;
 
 import com.nikondsl.daikin.CommandMode;
 import com.nikondsl.daikin.DaikinBase;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
-@Log4j2
+@Slf4j
 public class RestConnector {
     
     static RequestConfig createRequestConfig(CommandMode commandMode) {
@@ -43,7 +43,7 @@ public class RestConnector {
                 .build();
         HttpGet httpGet = new HttpGet(daikin.getHost() + ":" + daikin.getPort() + path);
         HttpResponse response = httpClient.execute(httpGet);
-        log.trace("request=" + httpGet.toString());
+//        log.trace("request=" + httpGet.toString());
         return Collections.singletonList(convertStreamToString(response.getEntity().getContent()));
     }
 
