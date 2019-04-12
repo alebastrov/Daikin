@@ -2,9 +2,6 @@ package com.nikondsl.daikin;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Strings;
-import com.diogonunes.jcdp.bw.Printer;
-import com.diogonunes.jcdp.color.ColoredPrinter;
-import com.diogonunes.jcdp.color.api.Ansi;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
@@ -42,7 +39,7 @@ import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RESET;
 
 public class DaikinController {
 	public static final int LAST_ADDRESS_IN_SUB_NET = 255;
-	private final Logger LOG = LogManager.getLogger(DaikinController.class);
+	private static final Logger LOG = LogManager.getLogger(DaikinController.class);
 
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
@@ -149,9 +146,9 @@ public class DaikinController {
         lookUpService.awaitTermination(2, TimeUnit.MINUTES);
 
         LOG.info("Scanning finished, found " + foundUnits.size() + " units.");
-        foundUnits.forEach((String[] nameAndAddressOfUnit) -> {
-            LOG.info("[" + nameAndAddressOfUnit[0] + "] on " + nameAndAddressOfUnit[1]);
-        });
+        foundUnits.forEach((String[] nameAndAddressOfUnit) ->
+            LOG.info("[" + nameAndAddressOfUnit[0] + "] on " + nameAndAddressOfUnit[1])
+        );
     }
 
     private static void setParametersForUnit(CommandParser cParser, DaikinBase daikin) {
@@ -173,6 +170,7 @@ public class DaikinController {
         if (secondsToSleep.length() <= 0) {
             return;
         }
+        int attemps = 0;
         while (true) {
             int seconds = Integer.parseInt(secondsToSleep);
             if (seconds > TimeUnit.MINUTES.toMillis(5) || seconds == 0) seconds = 60;
@@ -185,6 +183,7 @@ public class DaikinController {
             } catch (Exception e) {
                 LOG.error("Could not read Daikin unit state", e);
                 sleep(1);
+                if (attemps++ > 10) return;
             }
         }
     }
@@ -243,13 +242,13 @@ public class DaikinController {
             Thread.currentThread().sleep(TimeUnit.SECONDS.toMillis(seconds));
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            LOG.error("Could not sleep for " + seconds + " seconds", ex);
+            LOG.error("Could not sleep for " + seconds + " seconds, exit command detected.", ex);
         }
     }
 
     private void tryWriteToFile(String writeToFile, DaikinBase daikin, String[] nameAndAddressOfUnit) throws IOException {
         Path filePath = Paths.get(writeToFile);
-        if (!Files.exists(filePath)) {
+        if (!filePath.toFile().exists()) {
             filePath = Files.createFile(filePath);
             LOG.info(filePath.toAbsolutePath().toString() + " is created");
         }

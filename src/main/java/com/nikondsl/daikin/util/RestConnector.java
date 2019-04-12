@@ -25,7 +25,9 @@ import java.util.concurrent.TimeUnit;
 
 @Log4j2
 public class RestConnector {
-    
+    private RestConnector() {
+    }
+
     static RequestConfig createRequestConfig(CommandMode commandMode) {
         int timeoutInSeconds = commandMode == CommandMode.SCANNING ? 1 : 5;
         return RequestConfig
@@ -51,9 +53,9 @@ public class RestConnector {
         HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig(CommandMode.COMMAND)).build();
         HttpPost httpPost = new HttpPost(daikin.getHost() + ":" + daikin.getPort() + path);
         List<NameValuePair> params = new ArrayList<>();
-        parameters.entrySet().forEach(entry -> {
-            params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()));
-        });
+        parameters.entrySet().forEach(entry ->
+            params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()))
+        );
         httpPost.setEntity(new UrlEncodedFormEntity(params));
         HttpResponse response = httpClient.execute(httpPost);
         log.trace("request=" + post);

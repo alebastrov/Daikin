@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class WirelessDaikin extends DaikinBase {
-	private final Logger LOG = LogManager.getLogger(WirelessDaikin.class);
+	private static final Logger LOG = LogManager.getLogger(WirelessDaikin.class);
 
     private static final String GET_CONTROL_INFO = "/aircon/get_control_info";
     private static final String SET_CONTROL_INFO = "/aircon/set_control_info";
@@ -249,7 +249,7 @@ public class WirelessDaikin extends DaikinBase {
         try {
             return Double.parseDouble(value);
         } catch (NumberFormatException nfe) {
-            System.err.println("Error: cannot parse value [" + value + "] as a double");
+            System.err.println("Error: cannot parse value [" + value + "] as a double. Using 0.0 instead.");
             return 0.0;
         }
     }

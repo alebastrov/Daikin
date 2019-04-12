@@ -2,11 +2,16 @@ package com.nikondsl.daikin;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.nikondsl.daikin.wireless.WirelessDaikin;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Parameters(separators = "=")
 public class CommandParser {
+    private static final Logger LOG = LogManager.getLogger(CommandParser.class);
+
     @Parameter(names = "-protocol", description = "http/https protocol to use REST API")
     @Getter
     @Setter
@@ -76,18 +81,18 @@ public class CommandParser {
     
     public Long getTimeoutConnection() {
         try {
-            Long timeout = Long.parseLong(this.timeoutConnection);
-            return timeout;
+            return Long.parseLong(timeoutConnection);
         } catch (NumberFormatException ex) {
+            LOG.warn("Cannot parse [" + timeoutConnection + "] as long, ignoring.");
             return null;
         }
     }
 
     public Long getTimeoutSocket() {
         try {
-            Long timeout = Long.parseLong(this.timeoutSocket);
-            return timeout;
+            return Long.parseLong(timeoutSocket);
         } catch (NumberFormatException ex) {
+            LOG.warn("Cannot parse [" + timeoutSocket + "] as long.ignoring.");
             return null;
         }
     }

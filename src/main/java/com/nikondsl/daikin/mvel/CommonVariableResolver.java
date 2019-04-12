@@ -25,7 +25,7 @@ public class CommonVariableResolver {
 //        context.addImport(MapObject.class);
 //        context.addInput("obj", MapObject.class);
         Object compiled = MVEL.compileExpression("OuterTemperature < 22.0", context);
-        Map<String, Object> vars = new HashMap<String, Object>();
+        Map<String, Object> vars = new HashMap<>();
         vars.put("OuterTemperature", 21.199);
         VariableResolverFactory varsResolver = new MapVariableResolverFactory(vars);
         System.err.println(MVEL.executeExpression(compiled, varsResolver));

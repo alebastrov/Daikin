@@ -155,7 +155,7 @@ public class WiredDaikin extends DaikinBase {
         try {
             return numberFormat.parse(value).doubleValue();
         } catch (java.text.ParseException e) {
-            System.err.println("Error: cannot parse [" + value + "] as a double");
+            System.err.println("Error: cannot parse [" + value + "] as a double. Using 0.0 instead.");
             return 0.0;
         }
     }
