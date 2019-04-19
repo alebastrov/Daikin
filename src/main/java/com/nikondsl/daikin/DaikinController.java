@@ -2,6 +2,8 @@ package com.nikondsl.daikin;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Strings;
+import com.diogonunes.jcdp.color.ColoredPrinter;
+import com.diogonunes.jcdp.color.api.Ansi;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
