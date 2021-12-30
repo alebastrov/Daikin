@@ -1,8 +1,11 @@
 package com.nikondsl.daikin.enums;
 
 import com.nikondsl.daikin.ConsoleCommandParser;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 
+@ToString
 public enum Fan {
     
     Auto("A","FAuto"),

@@ -3,10 +3,16 @@
     <properties maven-id="org.mockito:mockito-core:2.7.22" />
     <CLASSES>
       <root url="jar://$MAVEN_REPOSITORY$/org/mockito/mockito-core/2.7.22/mockito-core-2.7.22.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy/1.6.11/byte-buddy-1.6.11.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy-agent/1.6.11/byte-buddy-agent-1.6.11.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/objenesis/objenesis/2.5/objenesis-2.5.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="jar://$MAVEN_REPOSITORY$/org/mockito/mockito-core/2.7.22/mockito-core-2.7.22-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy/1.6.11/byte-buddy-1.6.11-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/net/bytebuddy/byte-buddy-agent/1.6.11/byte-buddy-agent-1.6.11-sources.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/objenesis/objenesis/2.5/objenesis-2.5-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

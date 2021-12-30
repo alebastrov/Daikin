@@ -10,11 +10,14 @@ import com.nikondsl.daikin.enums.Mode;
 import com.nikondsl.daikin.util.RestConnector;
 import com.nikondsl.daikin.wireless.WirelessDaikin;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
@@ -34,25 +37,22 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_GREEN;
-import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RED;
-import static com.nikondsl.daikin.AnsiControlCharacters.ANSI_RESET;
-
-
+@ToString
+@NoArgsConstructor
 public class DaikinController {
 	public static final int LAST_ADDRESS_IN_SUB_NET = 255;
 	private static final Logger LOG = LogManager.getLogger(DaikinController.class);
 
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
-	public static final String COMMON_BASIC_INFO = "/common/basic_info";
+	public static final String COMMON_BASIC_INFO = "/common/basic_info".replaceAll("/", File.separator);
 	
 	@Setter
     @Getter
 	private CommandMode commandMode = CommandMode.COMMAND;
 	
-	public static void main(String[] args) throws InterruptedException {
-        final DaikinController controller = new DaikinController();
+	public static void main(String[] args) {
+        DaikinController controller = new DaikinController();
         if (args.length == 0) {
             controller.LOG.trace("No args[] provided, printing USAGE.");
             printUsage();
@@ -61,7 +61,11 @@ public class DaikinController {
         for (String arg : args) {
             if ("-scan".equals(arg)) {
                 controller.setCommandMode(CommandMode.SCANNING);
-                controller.scanSubNet(args, controller);
+                try {
+                    controller.scanSubNet(args, controller);
+                } catch (InterruptedException e) {
+                    break;
+                }
                 return;
             }
         }

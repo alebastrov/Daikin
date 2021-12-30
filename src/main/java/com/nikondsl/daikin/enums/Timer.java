@@ -1,7 +1,9 @@
 package com.nikondsl.daikin.enums;
 
-public enum Timer {
+import lombok.ToString;
 
+@ToString
+public enum Timer {
     OffOff,
     OnOff,
     OffOn,

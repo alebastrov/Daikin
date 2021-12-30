@@ -31,18 +31,12 @@ public class ExpressionProcessor {
 	private static final Logger LOG = LogManager.getLogger(ExpressionProcessor.class);
 	
 	@ToString
+	@Getter
+	@Setter
 	private static class Rule {
-		@Getter
-		@Setter
 		private String expression;
-		@Getter
-		@Setter
 		private DaikinBase action;
-		
-		@Getter
-		@Setter
 		private String nameOfRule;
-		
 	}
 	
 	public static void main(String[] args) throws Exception {

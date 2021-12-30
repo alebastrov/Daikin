@@ -2,7 +2,9 @@ package com.nikondsl.daikin.enums;
 
 import com.nikondsl.daikin.ConsoleCommandParser;
 import lombok.Getter;
+import lombok.ToString;
 
+@ToString
 public enum Mode {
 
     // only these options are available for wireless daikins
