@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 @ToString
 @NoArgsConstructor
@@ -45,8 +46,7 @@ public class DaikinController {
 
     public static final int THREADS_TO_SCAN = 5;
     public static final int DEFAULT_PORT = 80;
-	public static final String COMMON_BASIC_INFO = "/common/basic_info".replaceAll("/", File.separator);
-	
+	public static final String COMMON_BASIC_INFO = "/common/basic_info";
 	@Setter
     @Getter
 	private CommandMode commandMode = CommandMode.COMMAND;
