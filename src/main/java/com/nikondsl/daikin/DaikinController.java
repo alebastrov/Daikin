@@ -64,6 +64,7 @@ public class DaikinController {
                 try {
                     controller.scanSubNet(args, controller);
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     break;
                 }
                 return;
@@ -129,13 +130,16 @@ public class DaikinController {
 
     private void scanSubNet(String[] args, DaikinController controller) throws InterruptedException {
         final Set<String[]> foundUnits = new ConcurrentSkipListSet<>((o1, o2) -> (o1[0] + o1[1]).compareTo(o2[0] + o2[1]));
-        LOG.info("Scanning started, please wait about couple minutes ...");
+
+        LOG.info("==========================================================");
+        LOG.info("Scanning started, please wait for about couple minutes ...");
         ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
         for (int i = 1; i <= LAST_ADDRESS_IN_SUB_NET; i++) {
             final int ip = i;
             lookUpService.submit(() -> {
                 DaikinBase daikin = getDaikin(args.length > 1 ? args[1] : "", ip, DEFAULT_PORT);
                 try {
+                    LOG.info("Scanning " + daikin.getHost() + "...");
                     String[] nameAndAddressOfUnit = controller.checkApiExist(daikin);
                     if (nameAndAddressOfUnit != null) {
                         foundUnits.add(nameAndAddressOfUnit);
