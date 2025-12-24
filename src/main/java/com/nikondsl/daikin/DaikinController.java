@@ -84,9 +84,9 @@ public class DaikinController {
             daikin.updateDaikinState(); //send command to unit
 
             daikin.readDaikinState();
-            controller.LOG.info("State of unit after sending a command [" + nameAndAddressOfUnit[0] + "]: " + daikin);
+            controller.LOG.info("State of unit {} after sending a command: {}", nameAndAddressOfUnit[0], daikin);
         } catch (IOException ex) {
-            controller.LOG.error("Could not connect to a Daikin unit: " + daikin, ex);
+            controller.LOG.error("Could not connect to a Daikin unit: {}", daikin, ex);
         }
     }
 

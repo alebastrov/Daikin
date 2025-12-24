@@ -1,0 +1,5 @@
+### request
+POST http://192.168.0.108/aircon/set_control_info
+Content-Type: application/x-www-form-urlencoded
+
+pow=1&mode=4&stemp=20.0&f_rate=B&f_dir=0&shum=0
