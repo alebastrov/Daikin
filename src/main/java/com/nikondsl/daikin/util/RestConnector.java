@@ -3,19 +3,23 @@ package com.nikondsl.daikin.util;
 import com.nikondsl.daikin.CommandMode;
 import com.nikondsl.daikin.DaikinBase;
 import lombok.extern.log4j.Log4j2;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
+import org.apache.hc.client5.http.classic.methods.HttpGet;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.entity.UrlEncodedFormEntity;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.core5.http.HttpResponse;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.io.entity.EntityUtils;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.util.Timeout;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,34 +36,36 @@ public class RestConnector {
         int timeoutInSeconds = commandMode == CommandMode.SCANNING ? 1 : 5;
         return RequestConfig
                 .custom()
-                .setConnectTimeout((int) TimeUnit.SECONDS.toMillis(timeoutInSeconds))
-                .setSocketTimeout((int) TimeUnit.SECONDS.toMillis(timeoutInSeconds))
+                .setConnectionRequestTimeout(Timeout.of(Duration.of(timeoutInSeconds, ChronoUnit.SECONDS)))
                 .build();
     }
 
     public static List<String> submitGet(DaikinBase daikin, String path, CommandMode commandMode) throws IOException {
-        HttpClient httpClient = HttpClientBuilder
+        CloseableHttpClient httpClient = HttpClientBuilder
                 .create()
                 .setDefaultRequestConfig(createRequestConfig(commandMode))
-                .setMaxConnTotal(5)
                 .build();
         HttpGet httpGet = new HttpGet(daikin.getHost() + ":" + daikin.getPort() + path);
-        HttpResponse response = httpClient.execute(httpGet);
-        log.trace("request=" + httpGet.toString());
-        return Collections.singletonList(convertStreamToString(response.getEntity().getContent()));
+        return Collections.singletonList(httpClient.execute(httpGet, response -> {
+            log.trace("request=" + httpGet);
+            return convertStreamToString(response.getEntity().getContent());
+        }));
+
     }
 
     public static String submitPost(DaikinBase daikin, String path, String post, Map<String, String> parameters) throws IOException {
-        HttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig(CommandMode.COMMAND)).build();
+        CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultRequestConfig(createRequestConfig(CommandMode.COMMAND)).build();
         HttpPost httpPost = new HttpPost(daikin.getHost() + ":" + daikin.getPort() + path);
         List<NameValuePair> params = new ArrayList<>();
         parameters.entrySet().forEach(entry ->
             params.add(new BasicNameValuePair(entry.getKey(), entry.getValue()))
         );
         httpPost.setEntity(new UrlEncodedFormEntity(params));
-        HttpResponse response = httpClient.execute(httpPost);
-        log.trace("request=" + post);
-        return EntityUtils.toString(response.getEntity());
+        return httpClient.execute(httpPost, response -> {
+            log.trace("request=" + httpPost);
+            log.trace("response=" + response);
+            return EntityUtils.toString(response.getEntity());
+        });
     }
     
     static String convertStreamToString(InputStream is) {

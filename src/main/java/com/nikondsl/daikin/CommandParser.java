@@ -2,7 +2,6 @@ package com.nikondsl.daikin;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
-import com.nikondsl.daikin.wireless.WirelessDaikin;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;

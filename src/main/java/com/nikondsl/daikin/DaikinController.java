@@ -1,9 +1,6 @@
 package com.nikondsl.daikin;
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Strings;
-import com.diogonunes.jcdp.color.ColoredPrinter;
-import com.diogonunes.jcdp.color.api.Ansi;
 import com.nikondsl.daikin.enums.Fan;
 import com.nikondsl.daikin.enums.FanDirection;
 import com.nikondsl.daikin.enums.Mode;
@@ -13,11 +10,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketTimeoutException;
@@ -36,7 +31,6 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
 
 @ToString
 @NoArgsConstructor
@@ -44,7 +38,7 @@ public class DaikinController {
 	public static final int LAST_ADDRESS_IN_SUB_NET = 255;
 	private static final Logger LOG = LogManager.getLogger(DaikinController.class);
 
-    public static final int THREADS_TO_SCAN = 5;
+    public static final int THREADS_TO_SCAN = 25;
     public static final int DEFAULT_PORT = 80;
 	public static final String COMMON_BASIC_INFO = "/common/basic_info";
 	@Setter
@@ -97,58 +91,48 @@ public class DaikinController {
     }
 
     private static void printUsage() {
-        ColoredPrinter yellowColor = new ColoredPrinter.Builder(1, false)
-                .foreground(Ansi.FColor.YELLOW).background(Ansi.BColor.BLACK)   //setting format
-                .build();
-        ColoredPrinter greenColor = new ColoredPrinter.Builder(1, false)
-                .foreground(Ansi.FColor.GREEN).background(Ansi.BColor.BLACK)   //setting format
-                .build();
-        ColoredPrinter whiteColor = new ColoredPrinter.Builder(1, false)
-                .foreground(Ansi.FColor.WHITE).background(Ansi.BColor.BLACK)   //setting format
-                .build();
 
-        yellowColor.println("Possible commands:");
+        System.out.println("Possible commands:");
 
-        printOptionInUsage(greenColor, whiteColor, "-scan", "(192.168.1), possible values: (any subnet to scan ip addresses from 1 to 255) ");
-        printOptionInUsage(greenColor, whiteColor, "-protocol ", "(http), possible values: (http|https)");
-        printOptionInUsage(greenColor, whiteColor, "-host ", "(), possible value: (any ipv4 address)");
-        printOptionInUsage(greenColor, whiteColor, "-port ", "(80), possible values: any port number");
-        printOptionInUsage(greenColor, whiteColor, "-power ", "(on), possible values: (on|off)");
-        printOptionInUsage(greenColor, whiteColor, "-mode ", "(auto), possible values: (auto|dry|cool|heat|fan)");
-        printOptionInUsage(greenColor, whiteColor, "-temp ", "(22), possible values: any integer >= 10 and <= 32");
-        printOptionInUsage(greenColor, whiteColor, "-humid ", "(3), possible values: (1-99)");
-        printOptionInUsage(greenColor, whiteColor, "-fan ", "(auto), possible values: (silent|auto|1|2|3|4|5)");
-        printOptionInUsage(greenColor, whiteColor, "-direction ", "(), possible values: (|h|v|hv|vh)");
-        printOptionInUsage(greenColor, whiteColor, "-file ", "(), possible values: (any path)");
-        printOptionInUsage(greenColor, whiteColor, "-check.every ", "(), possible values: (1-3600 seconds)");
+        printOptionInUsage("-scan", "(192.168.1), possible values: (any subnet to scan ip addresses from 1 to 255) ");
+        printOptionInUsage("-protocol ", "(http), possible values: (http|https)");
+        printOptionInUsage("-host ", "(), possible value: (any ipv4 address)");
+        printOptionInUsage("-port ", "(80), possible values: any port number");
+        printOptionInUsage("-power ", "(on), possible values: (on|off)");
+        printOptionInUsage("-mode ", "(auto), possible values: (auto|dry|cool|heat|fan)");
+        printOptionInUsage("-temp ", "(22), possible values: any integer >= 10 and <= 32");
+        printOptionInUsage("-humid ", "(3), possible values: (1-99)");
+        printOptionInUsage("-fan ", "(auto), possible values: (silent|auto|1|2|3|4|5)");
+        printOptionInUsage("-direction ", "(), possible values: (|h|v|hv|vh)");
+        printOptionInUsage("-file ", "(), possible values: (any path)");
+        printOptionInUsage("-check.every ", "(), possible values: (1-3600 seconds)");
     }
 
-    private static void printOptionInUsage(ColoredPrinter printerForOption, ColoredPrinter printerForDescription, String option, String description) {
-        printerForOption.print(option + " ");
-        printerForDescription.println(description);
+    private static void printOptionInUsage( String option, String description) {
+        System.out.println(option + " ");
+        System.out.println(description);
     }
 
     private void scanSubNet(String[] args, DaikinController controller) throws InterruptedException {
-        final Set<String[]> foundUnits = new ConcurrentSkipListSet<>((o1, o2) -> (o1[0] + o1[1]).compareTo(o2[0] + o2[1]));
+        Set<String[]> foundUnits = new ConcurrentSkipListSet<>((o1, o2) -> (o1[0] + o1[1]).compareTo(o2[0] + o2[1]));
 
         LOG.info("==========================================================");
         LOG.info("Scanning started, please wait for about couple minutes ...");
-        ExecutorService lookUpService = Executors.newFixedThreadPool(THREADS_TO_SCAN);
+        ExecutorService lookUpService = Executors.newVirtualThreadPerTaskExecutor();
         for (int i = 1; i <= LAST_ADDRESS_IN_SUB_NET; i++) {
-            final int ip = i;
+            int ip = i;
             lookUpService.submit(() -> {
                 DaikinBase daikin = getDaikin(args.length > 1 ? args[1] : "", ip, DEFAULT_PORT);
                 try {
-                    LOG.info("Scanning " + daikin.getHost() + "...");
+                    LOG.trace("Scanning " + daikin.getHost() + "...");
                     String[] nameAndAddressOfUnit = controller.checkApiExist(daikin);
                     if (nameAndAddressOfUnit != null) {
                         foundUnits.add(nameAndAddressOfUnit);
                     }
-                } catch (ConnectTimeoutException | SocketTimeoutException ex) {
+                } catch (SocketTimeoutException ex) {
                     LOG.debug("Scanned " + daikin.getHost() + ". Nothing found, reason (" + ex.getMessage() + ")");
                 } catch (IOException e) {
-                    LOG.info("Scanned " + daikin.getHost() + ". Nothing found.", e);
-                    return;
+                    LOG.trace("Scanned " + daikin.getHost() + ". Nothing found.");
                 }
             });
         }
@@ -227,7 +211,7 @@ public class DaikinController {
 	}
 	
 	private static DaikinBase getDaikin(String subNet, final int ip, int port) {
-        if (Strings.isStringEmpty(subNet)) subNet = "192.168.1.";
+        if (subNet == null || subNet.trim().length() == 0) subNet = "192.168.1.";
         else subNet = subNet.replaceAll("((1?[0-9]{1,2}|2[0-4][0-9]|25[0-5]\\.){3})", "$1");
         if (!subNet.endsWith(".")) subNet += ".";
         return new DaikinBase("http://" + subNet + ip, port) {

@@ -10,8 +10,5 @@
         <module name="Daikin" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="Daikin" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
