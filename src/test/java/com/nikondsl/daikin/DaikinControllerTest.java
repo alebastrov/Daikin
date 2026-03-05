@@ -24,9 +24,10 @@ public class DaikinControllerTest {
 	
 	@Spy
 	private DaikinController daikinController = spy(new DaikinController());
-	
+
 	@Test
 	public void testScanResponseParse() throws IOException {
+
 		when(daikinBase.getHost()).thenReturn("127.0.0.133");
 		doReturn(Collections.singletonList(scanResponse)).when(daikinController).readIdentificationResponse(daikinBase);
 
